@@ -2,7 +2,9 @@ package com.quranrecite.app.domain
 
 object QuranConstants {
     const val PAGE_COUNT = 604
+    /** Pages 3..604 have 15 lines; pages 1 and 2 have only 8 (see [linesOnPage]). */
     const val LINES_PER_PAGE = 15
+    fun linesOnPage(page: Int) = if (page <= 2) 8 else LINES_PER_PAGE
     const val SURAH_COUNT = 114
 }
 
@@ -15,6 +17,11 @@ data class QuranWord(
     val indexInAyah: Int,
     val text: String,
     val isAyahMarker: Boolean = false,
+    /**
+     * Last global word id covered by this word. Equals [id] except for the (currently provisional) case where the
+     * 15-line DB numbers one Hafs token as two words; the word then covers id..idEnd and belongs to the line of [id].
+     */
+    val idEnd: Int = id,
 )
 
 /** One of the 15 lines of a mushaf page. */
@@ -35,3 +42,12 @@ data class QuranPage(val number: Int, val lines: List<PageLine>) {
     val recitableWords: List<QuranWord>
         get() = lines.filterIsInstance<PageLine.Ayahs>().flatMap { it.words }.filter { !it.isAyahMarker }
 }
+
+/** Per-surah navigation info. */
+data class SurahInfo(val number: Int, val nameAr: String, val ayahCount: Int, val startPage: Int)
+
+/**
+ * Known data limitations. [unverifiedPages] are pages whose word SET is exact but whose line breaks may be off by
+ * at most one word because one word-id adjustment in the 15-line DB could not be pinned down (see AGENT_2_HANDOFF.md).
+ */
+data class DataIssues(val unverifiedPages: List<Int>) { val fullyVerified: Boolean get() = unverifiedPages.isEmpty() }

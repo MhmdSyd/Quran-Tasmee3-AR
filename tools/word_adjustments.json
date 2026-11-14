@@ -1,0 +1,10 @@
+[
+  {"surah": 15, "ayah": 7,   "kind": "split", "tokenIndex": 1, "page": 262, "verified": false,
+   "note": "PROVISIONAL. Line DB has one more word id than Hafs text inside page 262 (provable: page 262 only ends on an ayah marker if the extra id lies before it). Exact word not provable from the DBs; candidate chosen by line-width fit."},
+  {"surah": 27, "ayah": 20,  "kind": "split", "tokenIndex": 4, "page": 378, "verified": false,
+   "note": "PROVISIONAL. Extra id lies inside page 378. Candidate = 'مَالِيَ' (ma + liya)."},
+  {"surah": 36, "ayah": 22,  "kind": "split", "tokenIndex": 1, "page": 441, "verified": false,
+   "note": "PROVISIONAL. Extra id lies inside page 441. Candidate = 'وَمَالِيَ'."},
+  {"surah": 37, "ayah": 130, "kind": "merge", "tokenIndex": 3, "page": 451, "verified": false,
+   "note": "PROVISIONAL. One id fewer than Hafs tokens inside page 451. Candidate = 'إِلۡ'+'يَاسِينَ' merged into one word."}
+]
