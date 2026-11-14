@@ -3,6 +3,7 @@ package com.quranrecite.app.di
 import android.content.Context
 import com.quranrecite.app.data.QuranRepository
 import com.quranrecite.app.data.SqliteQuranRepository
+import com.quranrecite.app.ui.mushaf.MushafDataSource
 import com.quranrecite.app.recitation.NoOpRecitationMatcher
 import com.quranrecite.app.recitation.RecitationMatcher
 import com.quranrecite.app.session.InMemorySessionStore
@@ -15,6 +16,7 @@ import com.quranrecite.app.speech.SpeechEngine
 /** Manual DI. Later agents swap the stub implementations here and nowhere else. */
 class AppContainer(context: Context) {
     val quranRepository: QuranRepository = SqliteQuranRepository(context.applicationContext) // Agent 2 (done)
+    val mushafData = MushafDataSource(quranRepository)               // Agent 3 (page cache for the mushaf UI)
     val speechEngine: SpeechEngine = NoOpSpeechEngine()               // Agent 3
     val recitationMatcher: RecitationMatcher = NoOpRecitationMatcher() // Agent 4
     val settingsRepository: SettingsRepository = PrefsSettingsRepository(context.applicationContext)

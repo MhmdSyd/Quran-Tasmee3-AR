@@ -37,8 +37,7 @@ fun AppNav(container: AppContainer) {
             ReaderScreen(
                 page = page,
                 container = container,
-                onPageChange = { nav.navigate(Routes.reader(it)) { popUpTo(Routes.READER) { inclusive = true } } },
-                onStartRecitation = { nav.navigate(Routes.recite(page)) },
+                onStartRecitation = { nav.navigate(Routes.recite(it)) },
                 onOpenSettings = { nav.navigate(Routes.SETTINGS) },
             )
         }
