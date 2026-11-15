@@ -251,32 +251,36 @@ fun RecitationScreen(
 
     Column(Modifier.fillMaxSize().background(ScreenBg).systemBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
         // header
-        Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButtonBox("رجوع إلى المصحف", onClick = { container.endSession(); onBack() }) { BackIcon(Ink) }
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("تسميع الصفحة ${curPage.toArabicDigits()}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Ink)
+                Text("تسميع الصفحة ${curPage.toArabicDigits()}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Ink)
                 Text(
                     "${SummaryText.digits(progress.passedWords)} من ${SummaryText.digits(progress.totalWords)} كلمة",
-                    fontSize = 12.sp, color = Muted,
+                    fontSize = 11.sp, color = Muted,
                 )
             }
             IconButtonBox("إعدادات التسميع", onOpenSettings) { GearIcon(Ink) }
         }
 
-        StatusLine(
-            error = error, micDenied = micDenied, loading = engineState == EngineState.Loading,
-            finishing = finishing, feedback = if (feedbackVisible) SummaryText.feedback(progress.feedback) else null,
-            onOpenAppSettings = { ctx.startActivity(MicPermission.appSettingsIntent(ctx)) },
-        )
-
-        MushafPageFrame(
-            pageNumber = curPage,
-            data = container.mushafData,
-            modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp),
-            mode = MushafMode.Recitation,
-            wordStates = remember(progress, settings.showMistakeImmediately) { progress.toWordVisuals(settings.showMistakeImmediately) },
-            onWordClick = { if (!finishing) picked = it },
-        )
+        // Same box as the reader's pager (weight 1, 8dp sides) -> the page has the same size and position in both screens.
+        Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp)) {
+            MushafPageFrame(
+                pageNumber = curPage,
+                data = container.mushafData,
+                modifier = Modifier.fillMaxSize(),
+                mode = MushafMode.Recitation,
+                wordStates = remember(progress, settings.showMistakeImmediately) { progress.toWordVisuals(settings.showMistakeImmediately) },
+                onWordClick = { if (!finishing) picked = it },
+            )
+            // Status / feedback / errors float over the bottom of the page instead of taking space above it.
+            StatusLine(
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp),
+                error = error, micDenied = micDenied, loading = engineState == EngineState.Loading,
+                finishing = finishing, feedback = if (feedbackVisible) SummaryText.feedback(progress.feedback) else null,
+                onOpenAppSettings = { ctx.startActivity(MicPermission.appSettingsIntent(ctx)) },
+            )
+        }
 
         // controls (physical left -> right): previous/next page, hint, show ayah, microphone toggle.
         // The row is forced LTR so the arrows stay on the left and the microphone on the right in this RTL screen.
@@ -333,6 +337,7 @@ private fun IconButtonBox(description: String, onClick: () -> Unit, icon: @Compo
 
 @Composable
 private fun StatusLine(
+    modifier: Modifier,
     error: SpeechEvent.Error?,
     micDenied: Boolean,
     loading: Boolean,
@@ -354,7 +359,7 @@ private fun StatusLine(
         else -> feedback
     }
     val warn = error != null || micDenied
-    Box(Modifier.fillMaxWidth().height(32.dp).padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
+    Box(modifier.fillMaxWidth().padding(horizontal = 12.dp), contentAlignment = Alignment.Center) {
         if (text != null) {
             Text(
                 text,

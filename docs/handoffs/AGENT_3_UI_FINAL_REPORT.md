@@ -44,3 +44,4 @@ Not fixed / worth knowing: nothing could be compiled or run on a device, so plea
 - Recitation controls: arrows, mic, "تلميح", "إظهار الآية" are all 48dp high; row padding = the reader's bottom bar (8dp vertical), so the page area has the same size while reading and reciting. Hint/show-ayah are compact text buttons (no label under them).
 - Welcome page: `WelcomeScreen` (white, `res/drawable-nodpi/bismillah.png`, transparent-background version of the supplied image), start destination, ~2.2 s or tap, then the reader opens at page 1.
 - Not compiled/run (no Android SDK here).
+- Page position (round 3): recitation header 96dp (64 header + 32 status line) -> 48dp, exactly the reader's top bar; the status/feedback/error chip is now an overlay at the bottom of the page instead of a row above it. Page box = weight(1f), 8dp sides, top bar 48dp, bottom bar 64dp in both screens, so the Quran page has the same size and position while reading and reciting.
