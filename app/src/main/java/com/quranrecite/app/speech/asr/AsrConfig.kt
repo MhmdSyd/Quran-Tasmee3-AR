@@ -18,7 +18,7 @@ object AsrModel {
 
 /**
  * Tunables of the chunked ("pseudo-streaming") recognition. Defaults are reasoned, not yet tuned on devices:
- * see AGENT_4_HANDOFF.md for what was and was not measured.
+ * see docs/handoffs/AGENT_4_HANDOFF.md for what was and was not measured.
  */
 data class StreamingConfig(
     val sampleRate: Int = AsrModel.SAMPLE_RATE,

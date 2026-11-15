@@ -9,12 +9,19 @@ import com.quranrecite.app.data.SqliteQuranRepository
 import com.quranrecite.app.ui.mushaf.MushafDataSource
 import com.quranrecite.app.recitation.TrackingRecitationMatcher
 import com.quranrecite.app.recitation.RecitationMatcher
+import com.quranrecite.app.session.ActiveTimer
 import com.quranrecite.app.session.InMemorySessionStore
 import com.quranrecite.app.session.SessionStore
 import com.quranrecite.app.settings.PrefsSettingsRepository
 import com.quranrecite.app.settings.SettingsRepository
 import com.quranrecite.app.speech.asr.SherpaSpeechEngine
 import com.quranrecite.app.speech.SpeechEngine
+
+/**
+ * The recitation in progress. Lives in the container (not in a composable) so that opening Settings from the
+ * recitation screen, or any other recomposition of the screen, resumes it instead of restarting from word 1.
+ */
+class RecitationSession(val page: Int, val startedAt: Long, val timer: ActiveTimer)
 
 /** Manual DI. Later agents swap the stub implementations here and nowhere else. */
 class AppContainer(context: Context) {
@@ -29,4 +36,13 @@ class AppContainer(context: Context) {
     /** Survives screen changes; used to stop the microphone when the recitation screen is left. */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val sessionStore: SessionStore = InMemorySessionStore()
+
+    /** Non-null while a recitation is in progress; cleared when it is finished or abandoned. */
+    @Volatile var activeSession: RecitationSession? = null
+        private set
+
+    fun beginSession(page: Int): RecitationSession =
+        RecitationSession(page, System.currentTimeMillis(), ActiveTimer()).also { activeSession = it }
+
+    fun endSession() { activeSession = null }
 }

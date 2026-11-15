@@ -48,6 +48,6 @@ data class SurahInfo(val number: Int, val nameAr: String, val ayahCount: Int, va
 
 /**
  * Known data limitations. [unverifiedPages] are pages whose word SET is exact but whose line breaks may be off by
- * at most one word because one word-id adjustment in the 15-line DB could not be pinned down (see AGENT_2_HANDOFF.md).
+ * at most one word because one word-id adjustment in the 15-line DB could not be pinned down (see docs/handoffs/AGENT_2_HANDOFF.md).
  */
 data class DataIssues(val unverifiedPages: List<Int>) { val fullyVerified: Boolean get() = unverifiedPages.isEmpty() }

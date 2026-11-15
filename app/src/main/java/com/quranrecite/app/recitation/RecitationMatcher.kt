@@ -96,7 +96,7 @@ data class RecitationReport(
 
 /**
  * Matches recognised speech against the expected Quran words of one page and drives reveal state.
- * Pure Kotlin, no Android dependencies. See AGENT_5_HANDOFF.md for the matching rules.
+ * Pure Kotlin, no Android dependencies. See docs/handoffs/AGENT_5_HANDOFF.md for the matching rules.
  */
 interface RecitationMatcher {
     val progress: StateFlow<RecitationProgress>

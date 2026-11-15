@@ -12,7 +12,7 @@ import com.quranrecite.app.speech.asr.ModelAlphabet
 /**
  * The position tracker. One instance follows one page. Not thread-safe (see [TrackingRecitationMatcher]).
  *
- * Principles (details in AGENT_5_HANDOFF.md):
+ * Principles (details in docs/handoffs/AGENT_5_HANDOFF.md):
  *  1. The canonical words come from the page and are never altered; recognised text is only compared, never shown.
  *  2. The cursor (next expected word) only moves on evidence: a word is accepted when it matches closely, or when the
  *     words around it do. A far jump needs a multi-word anchor. Weak, ambiguous or isolated hits do not move it.

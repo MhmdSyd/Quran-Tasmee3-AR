@@ -1,5 +1,7 @@
 package com.quranrecite.app.ui.screens
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,7 +12,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,12 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quranrecite.app.di.AppContainer
 import com.quranrecite.app.settings.Strictness
+import com.quranrecite.app.ui.theme.Muted
 
 @Composable
 fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenAsrDiagnostics: () -> Unit = {}) {
     val repo = container.settingsRepository
     val s by repo.settings.collectAsState()
-    Column(Modifier.fillMaxSize().systemBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("إعدادات التسميع", fontSize = 20.sp)
 
         Text("الصرامة")
@@ -40,13 +42,6 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenAsrDiagnos
             }
         }
 
-        Text("حجم الخط")
-        Slider(
-            value = s.fontScale,
-            onValueChange = { v -> repo.update { it.copy(fontScale = v) } },
-            valueRange = 0.8f..1.6f,
-        )
-
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("إظهار علامات المراجعة فوراً")
             Switch(
@@ -57,5 +52,15 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenAsrDiagnos
 
         OutlinedButton(onClick = onOpenAsrDiagnostics) { Text("تشخيص التعرف على الصوت (ASR)") }
         Button(onClick = onBack) { Text("رجوع") }
+
+        // About / attribution (see THIRD_PARTY_NOTICES.md)
+        Text(
+            "تطبيق يعمل دون اتصال بالإنترنت: لا يُرسل أي صوت أو بيانات خارج الجهاز.\n" +
+                "التعرف على الصوت تقريبي ولا يحكم على صحة التجويد؛ «للمراجعة» تعني أن الكلمة لم يتأكد التعرف عليها.\n\n" +
+                "Offline speech model: Abdou/quran-asr-small (MIT), trained on data incl. tarteel-ai/tlog (CC-BY-4.0). " +
+                "Runtime: sherpa-onnx (Apache-2.0). Quran font: KFGQPC Uthmanic Hafs. Full notices: THIRD_PARTY_NOTICES.md.",
+            fontSize = 11.sp,
+            color = Muted,
+        )
     }
 }

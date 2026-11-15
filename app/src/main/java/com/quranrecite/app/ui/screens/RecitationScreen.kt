@@ -1,5 +1,6 @@
 package com.quranrecite.app.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -46,7 +47,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quranrecite.app.di.AppContainer
 import com.quranrecite.app.domain.QuranWord
-import com.quranrecite.app.session.ActiveTimer
 import com.quranrecite.app.session.SessionSummary
 import com.quranrecite.app.session.SummaryText
 import com.quranrecite.app.session.toSummary
@@ -98,8 +98,15 @@ fun RecitationScreen(
     val engineState by engine.state.collectAsState()
     val settings by container.settingsRepository.settings.collectAsState()
 
-    val startedAt = remember { System.currentTimeMillis() }
-    val timer = remember { ActiveTimer() }
+    // Resume the session when this screen is re-entered for the same page (Settings and back, rotation); else start fresh.
+    val resumed = remember(page) {
+        val s = container.activeSession
+        val p = matcher.progress.value
+        s != null && s.page == page && p.pageNumber == page && !p.finished
+    }
+    val session = remember(page) { if (resumed) container.activeSession!! else container.beginSession(page) }
+    val startedAt = session.startedAt
+    val timer = session.timer
     var error by remember { mutableStateOf<SpeechEvent.Error?>(null) }
     var micDenied by remember { mutableStateOf(false) }
     var picked by remember { mutableStateOf<QuranWord?>(null) }
@@ -108,6 +115,7 @@ fun RecitationScreen(
 
     // 1) page + basmala -> matcher
     LaunchedEffect(page) {
+        if (resumed) return@LaunchedEffect
         val p = container.mushafData.page(page)
         matcher.begin(p, null, container.mushafData.basmallah())
     }
@@ -136,8 +144,11 @@ fun RecitationScreen(
         onDispose { view.keepScreenOn = false }
     }
     DisposableEffect(Unit) {
-        onDispose { container.appScope.launch { engine.stop() } }
+        onDispose { timer.pause(); container.appScope.launch { engine.stop() } }
     }
+
+    // Leaving with Back abandons the session (Settings / rotation do not go through here).
+    BackHandler { container.endSession(); onBack() }
 
     // 4) backgrounding / interruptions: release the mic, continue where we were when the user is back
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -184,6 +195,7 @@ fun RecitationScreen(
             repeat(3) { yield() }              // let the collector hand them to the matcher
             delay(150)
             timer.pause()
+            container.endSession()
             onFinish(matcher.report().toSummary(startedAt, timer.elapsedMillis()))
         }
     }
@@ -192,7 +204,7 @@ fun RecitationScreen(
     Column(Modifier.fillMaxSize().background(ScreenBg).systemBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
         // header
         Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButtonBox("رجوع إلى المصحف", onBack) { BackIcon(Ink) }
+            IconButtonBox("رجوع إلى المصحف", onClick = { container.endSession(); onBack() }) { BackIcon(Ink) }
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("تسميع الصفحة ${page.toArabicDigits()}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Ink)
                 Text(

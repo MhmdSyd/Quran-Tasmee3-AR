@@ -18,9 +18,24 @@ android {
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
     }
 
+    // Optional release signing: only when CI (or the developer) provides the keystore through the environment.
+    // Nothing secret is ever stored in the repository.
+    val releaseKeystore = System.getenv("RELEASE_KEYSTORE_PATH")
+    if (!releaseKeystore.isNullOrBlank()) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (!releaseKeystore.isNullOrBlank()) signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

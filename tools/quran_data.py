@@ -1,4 +1,4 @@
-"""Shared logic for building/validating the Quran word-id mapping. See AGENT_2_HANDOFF.md."""
+"""Shared logic for building/validating the Quran word-id mapping. See docs/handoffs/AGENT_2_HANDOFF.md."""
 import hashlib, json, os, sqlite3
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

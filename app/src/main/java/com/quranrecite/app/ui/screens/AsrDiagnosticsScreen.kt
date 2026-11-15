@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 /**
  * Developer screen for the offline ASR engine: live raw recognizer output (model letters, NO diacritics, never
  * Quran text), engine state, latency/CPU/memory numbers and a synthetic-audio benchmark. Use it for the on-device
- * measurements listed in AGENT_4_HANDOFF.md, ideally with airplane mode on.
+ * measurements listed in docs/handoffs/AGENT_4_HANDOFF.md, ideally with airplane mode on.
  */
 @Composable
 fun AsrDiagnosticsScreen(container: AppContainer, onBack: () -> Unit) {

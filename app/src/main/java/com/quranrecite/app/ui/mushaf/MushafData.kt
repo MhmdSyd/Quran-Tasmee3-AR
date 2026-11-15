@@ -35,7 +35,7 @@ class MushafDataSource(private val repo: QuranRepository, private val cacheSize:
 
     suspend fun surahs(): List<SurahInfo> = surahsCache ?: repo.getSurahs().also { surahsCache = it }
 
-    /** Pages whose line breaks may be off by one word (AGENT_2_HANDOFF.md). */
+    /** Pages whose line breaks may be off by one word (docs/handoffs/AGENT_2_HANDOFF.md). */
     suspend fun unverifiedPages(): Set<Int> = repo.getDataIssues().unverifiedPages.toSet()
 }
 
