@@ -46,7 +46,10 @@ def main():
     print(f"model loaded in {time.time() - t0:.2f}s")
 
     def decode(x):
-        s = rec.create_stream(); s.accept_waveform(16000, x); rec.decode(s); return s.result
+        s = rec.create_stream()
+        s.accept_waveform(16000, x)
+        rec.decode_stream(s)
+        return s.result.text
 
     # 1) synthetic audio must decode without error, for a range of lengths incl. very short ones
     rng = np.random.default_rng(0)
