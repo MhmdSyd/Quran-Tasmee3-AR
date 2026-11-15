@@ -42,14 +42,7 @@ internal fun MushafWord(
         else -> when (v) {
             WordVisual.Normal, WordVisual.Revealed -> style.ink
             WordVisual.Correct -> style.correct
-            WordVisual.Expected ->
-            drawLine(s.expectedLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 3f.dp.toPx())
-        WordVisual.Skipped ->
-            drawLine(
-                s.skippedLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 2f.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f.dp.toPx(), 4f.dp.toPx())),
-            )
-        WordVisual.Current -> style.currentText
+            WordVisual.Current -> style.currentText
             WordVisual.Uncertain -> style.uncertainText
             WordVisual.Hidden, WordVisual.Mistake, WordVisual.Expected, WordVisual.Skipped -> Color.Transparent
         }
@@ -78,6 +71,13 @@ private fun DrawScope.drawDecoration(v: WordVisual, baselinePx: Float, fontPx: F
     when (v) {
         WordVisual.Hidden ->
             drawLine(s.hiddenLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 1.5f.dp.toPx())
+        WordVisual.Expected ->
+            drawLine(s.expectedLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 3f.dp.toPx())
+        WordVisual.Skipped ->
+            drawLine(
+                s.skippedLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 2f.dp.toPx(),
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f.dp.toPx(), 4f.dp.toPx())),
+            )
         WordVisual.Current ->
             drawRoundRect(s.currentFill, Offset(-pad, chipTop), chip, CornerRadius(6f.dp.toPx()))
         WordVisual.Uncertain -> {
