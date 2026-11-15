@@ -31,7 +31,7 @@ data class MushafStyle(
     val uncertainText: Color = Muted,
     val uncertainFill: Color = Gold.copy(alpha = 0.28f),
     val uncertainLine: Color = GoldDark,
-    val hiddenLine: Color = Color(0xFF8F8668),
+    val hiddenLine: Color = Color(0xFF9A9A9A),
     val expectedLine: Color = Green,
     val skippedLine: Color = GoldDark,
     val mistakeLine: Color = MistakeRed,

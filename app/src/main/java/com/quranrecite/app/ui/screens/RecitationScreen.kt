@@ -288,14 +288,14 @@ fun RecitationScreen(
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     OutlinedButton(
-                        onClick = { onArrow(curPage - 1) }, enabled = !finishing && !switching && curPage > 1,
-                        contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.size(44.dp).semantics { contentDescription = "الصفحة السابقة" },
-                    ) { Text("<", fontSize = 20.sp) }
-                    OutlinedButton(
                         onClick = { onArrow(curPage + 1) }, enabled = !finishing && !switching && curPage < QuranConstants.PAGE_COUNT,
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier.size(44.dp).semantics { contentDescription = "الصفحة التالية" },
+                    ) { Text("<", fontSize = 20.sp) }
+                    OutlinedButton(
+                        onClick = { onArrow(curPage - 1) }, enabled = !finishing && !switching && curPage > 1,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.size(44.dp).semantics { contentDescription = "الصفحة السابقة" },
                     ) { Text(">", fontSize = 20.sp) }
                 }
                 Spacer(Modifier.weight(1f))

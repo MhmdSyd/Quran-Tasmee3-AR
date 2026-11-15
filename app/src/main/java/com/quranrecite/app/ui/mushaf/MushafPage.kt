@@ -164,7 +164,7 @@ internal fun JustifiedLine(
             val a = Offset(seg.left.toFloat(), y)
             val b = Offset(seg.right.toFloat(), y)
             when (seg.kind) {
-                SegmentKind.Base -> drawLine(style.hiddenLine, a, b, strokeWidth = 1.5f.dp.toPx())
+                SegmentKind.Base -> drawLine(style.hiddenLine, a, b, strokeWidth = 1f.dp.toPx())
                 SegmentKind.Expected -> drawLine(style.expectedLine, a, b, strokeWidth = 3f.dp.toPx())
                 SegmentKind.Mistake -> drawLine(style.mistakeLine, a, b, strokeWidth = 2.5f.dp.toPx())
                 SegmentKind.Skipped -> drawLine(

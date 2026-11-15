@@ -113,14 +113,14 @@ fun ReaderScreen(
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(
-                        onClick = { goTo(current - 1) }, enabled = current > 1,
-                        contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة السابقة" },
-                    ) { Text("<", fontSize = 22.sp) }
-                    OutlinedButton(
                         onClick = { goTo(current + 1) }, enabled = current < QuranConstants.PAGE_COUNT,
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة التالية" },
+                    ) { Text("<", fontSize = 22.sp) }
+                    OutlinedButton(
+                        onClick = { goTo(current - 1) }, enabled = current > 1,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة السابقة" },
                     ) { Text(">", fontSize = 22.sp) }
                 }
             }
