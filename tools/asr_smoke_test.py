@@ -56,7 +56,7 @@ def main():
     for sec in (0.3, 1, 5, 10):
         x = (0.1 * rng.standard_normal(int(16000 * sec))).astype(np.float32)
         t = time.time(); r = decode(x); dt = time.time() - t
-        print(f"synthetic {sec:>4}s noise -> {len(r.text)} chars, {dt*1000:.0f} ms (RTF {dt/sec:.3f})")
+        print(f"synthetic {sec:>4}s noise -> {len(r)} chars, {dt*1000:.0f} ms (RTF {dt/sec:.3f})")
 
     # 2) real audio
     db = sqlite3.connect(os.path.join(ROOT, "app/src/main/assets/qpc-hafs.db"))
@@ -72,7 +72,7 @@ def main():
         text = db.execute("select text from verses where surah=? and ayah=?", (int(s), int(ay))).fetchone()[0]
         ref = [f for f in (fold(w) for w in text.replace("\u00a0", " ").split(" ") if w != "۞") if f]
         t = time.time(); r = decode(x); dt = time.time() - t
-        hyp = [w for w in r.text.split("\u2581") if w]
+        hyp = [w for w in r.split("\u2581") if w]
         w_ = wer(ref, hyp); wers.append(w_)
         # timestamp sanity (40 ms grid) on real output
         ts = list(r.timestamps)
