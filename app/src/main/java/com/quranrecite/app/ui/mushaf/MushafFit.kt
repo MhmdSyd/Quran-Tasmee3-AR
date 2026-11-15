@@ -29,6 +29,24 @@ object MushafFit {
     /** surah_header_bg.png is 2147 x 227 px. */
     const val HEADER_ASPECT = 2147f / 227f
 
+    /** Inner opening of surah_header_bg.png as fractions of the image (measured: x 360..1786 of 2147, y 23..202 of 227). */
+    const val HEADER_HOLE_W = 0.664f
+    const val HEADER_HOLE_H = 0.789f
+    /** Largest advance / ink height (em) over the 113 glyphs of header-surah-name.ttf. */
+    const val SURAH_GLYPH_MAX_ADVANCE_EM = 2.73f
+    const val SURAH_GLYPH_MAX_INK_EM = 0.88f
+
+    /**
+     * One font size for every surah heading, so that the tallest/widest glyph still sits inside the decoration's opening
+     * with margin (90% of its height, 84% of its width; typical glyphs are shorter than the tallest). [headerHeightPx] = rendered height of the decoration.
+     */
+    fun headerTitlePx(headerHeightPx: Float): Float {
+        val headerWidthPx = headerHeightPx * HEADER_ASPECT
+        val byHeight = 0.90f * HEADER_HOLE_H * headerHeightPx / SURAH_GLYPH_MAX_INK_EM
+        val byWidth = 0.84f * HEADER_HOLE_W * headerWidthPx / SURAH_GLYPH_MAX_ADVANCE_EM
+        return min(byHeight, byWidth)
+    }
+
     fun lineEm(wordEms: List<Float>, centered: Boolean): Float {
         if (wordEms.isEmpty()) return 0f
         val gap = if (centered) NATURAL_GAP_EM else MIN_GAP_EM

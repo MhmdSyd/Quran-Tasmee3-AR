@@ -63,21 +63,13 @@ internal fun MushafWord(
 }
 
 private fun DrawScope.drawDecoration(v: WordVisual, baselinePx: Float, fontPx: Float, s: MushafStyle) {
+    // Hidden / Expected / Skipped / Mistake underlines are drawn per LINE (JustifiedLine) so they connect across words.
     if (v == WordVisual.Normal || v == WordVisual.Revealed || v == WordVisual.Correct) return
     val lineY = if (baselinePx.isNaN()) size.height * 0.82f else baselinePx + fontPx * 0.16f
     val pad = 3f.dp.toPx()
     val chipTop = size.height * 0.06f
     val chip = Size(size.width + 2 * pad, size.height * 0.88f)
     when (v) {
-        WordVisual.Hidden ->
-            drawLine(s.hiddenLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 1.5f.dp.toPx())
-        WordVisual.Expected ->
-            drawLine(s.expectedLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 3f.dp.toPx())
-        WordVisual.Skipped ->
-            drawLine(
-                s.skippedLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 2f.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f.dp.toPx(), 4f.dp.toPx())),
-            )
         WordVisual.Current ->
             drawRoundRect(s.currentFill, Offset(-pad, chipTop), chip, CornerRadius(6f.dp.toPx()))
         WordVisual.Uncertain -> {
@@ -89,7 +81,6 @@ private fun DrawScope.drawDecoration(v: WordVisual, baselinePx: Float, fontPx: F
         }
         WordVisual.Mistake -> {
             drawRoundRect(s.mistakeFill, Offset(-pad, chipTop), chip, CornerRadius(4f.dp.toPx()))
-            drawLine(s.mistakeLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 2.5f.dp.toPx())
         }
         else -> Unit
     }

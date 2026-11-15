@@ -66,7 +66,7 @@ import com.quranrecite.app.speech.asr.rememberMicPermissionRequest
 import com.quranrecite.app.ui.components.BackIcon
 import com.quranrecite.app.ui.components.BulbIcon
 import com.quranrecite.app.ui.components.MicIcon
-import com.quranrecite.app.ui.components.SlidersIcon
+import com.quranrecite.app.ui.components.GearIcon
 import com.quranrecite.app.ui.components.EyeIcon
 import com.quranrecite.app.ui.components.PauseIcon
 import com.quranrecite.app.ui.components.PlayIcon
@@ -260,7 +260,7 @@ fun RecitationScreen(
                     fontSize = 12.sp, color = Muted,
                 )
             }
-            IconButtonBox("إعدادات التسميع", onOpenSettings) { SlidersIcon(Ink) }
+            IconButtonBox("إعدادات التسميع", onOpenSettings) { GearIcon(Ink) }
         }
 
         StatusLine(

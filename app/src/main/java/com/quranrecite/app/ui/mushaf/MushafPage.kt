@@ -7,6 +7,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
@@ -73,21 +78,28 @@ fun MushafPage(
                 Box(slot) {
                     when (line) {
                         is PageLine.SurahHeader -> SurahHeaderLine(
-                            "سورة " + surahName(line.surah), headerPainter, metrics.fontPx, slotPx, widthPx, style,
+                            line.surah, surahName(line.surah), headerPainter, slotPx, widthPx, style,
                         )
                         is PageLine.Basmallah -> JustifiedLine(true, naturalGapPx, Modifier.fillMaxSize()) {
                             for (word in basmallah) {
                                 MushafWord(word, false, WordVisual.Normal, fontSp, metrics.fontPx, style, null)
                             }
                         }
-                        is PageLine.Ayahs -> JustifiedLine(line.isCentered, naturalGapPx, Modifier.fillMaxSize()) {
-                            for (w in line.words) key(w.id) {
-                                val visual = wordStates[w.id]
-                                    ?: if (mode == MushafMode.Reading) WordVisual.Normal else WordVisual.Hidden
+                        is PageLine.Ayahs -> {
+                            val defaultVisual = if (mode == MushafMode.Reading) WordVisual.Normal else WordVisual.Hidden
+                            val visuals = line.words.map { wordStates[it.id] ?: defaultVisual }
+                            val kinds = line.words.mapIndexed { i, w -> if (w.isAyahMarker) WordLine.None else visuals[i].lineKind() }
+                            JustifiedLine(
+                                line.isCentered, naturalGapPx, Modifier.fillMaxSize(),
+                                kinds = kinds, fontPx = metrics.fontPx, style = style,
+                            ) {
+                            line.words.forEachIndexed { i, w -> key(w.id) {
+                                val visual = visuals[i]
                                 MushafWord(
                                     w.text, w.isAyahMarker, visual, fontSp, metrics.fontPx, style,
                                     onWordClick?.let { cb -> { cb(w) } },
                                 )
+                            } }
                             }
                         }
                     }
@@ -122,33 +134,73 @@ private fun computeMetrics(
     return PageMetrics(MushafFit.fontPx(widthPx, MushafFit.pageScale(widest), slotPx))
 }
 
-/** Places its children (words) in reading order from the right edge; see [MushafFit.placeRtl]. */
+/** Geometry written by the layout pass and read by the draw pass of the same line (layout always precedes draw). */
+private class LineGeometry {
+    var xs = IntArray(0)
+    var widths = IntArray(0)
+    var lineY = Float.NaN
+}
+
+/**
+ * Places its children (words) in reading order from the right edge; see [MushafFit.placeRtl].
+ * With [kinds] it also draws the connected underline of the unrevealed words (see [MushafUnderline]) behind them,
+ * at the real positions and widths of the words, so revealing a word never moves anything.
+ */
 @Composable
 internal fun JustifiedLine(
     centered: Boolean,
     naturalGapPx: Int,
     modifier: Modifier,
+    kinds: List<WordLine>? = null,
+    fontPx: Float = 0f,
+    style: MushafStyle = MushafStyle.Default,
     content: @Composable () -> Unit,
 ) {
-    Layout(content = content, modifier = modifier) { measurables, constraints ->
+    val geo = remember { LineGeometry() }
+    val drawn = if (kinds == null || kinds.all { it == WordLine.None }) modifier else modifier.drawBehind {
+        if (geo.xs.size != kinds.size) return@drawBehind
+        val y = if (geo.lineY.isNaN()) size.height * 0.62f else geo.lineY
+        for (seg in MushafUnderline.segments(geo.xs, geo.widths, kinds)) {
+            val a = Offset(seg.left.toFloat(), y)
+            val b = Offset(seg.right.toFloat(), y)
+            when (seg.kind) {
+                SegmentKind.Base -> drawLine(style.hiddenLine, a, b, strokeWidth = 1.5f.dp.toPx())
+                SegmentKind.Expected -> drawLine(style.expectedLine, a, b, strokeWidth = 3f.dp.toPx())
+                SegmentKind.Mistake -> drawLine(style.mistakeLine, a, b, strokeWidth = 2.5f.dp.toPx())
+                SegmentKind.Skipped -> drawLine(
+                    style.skippedLine, a, b, strokeWidth = 2f.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f.dp.toPx(), 4f.dp.toPx())),
+                )
+            }
+        }
+    }
+    Layout(content = content, modifier = drawn) { measurables, constraints ->
         val placeables = measurables.map { it.measure(Constraints()) }
         val width = constraints.maxWidth
         val height = if (constraints.hasBoundedHeight) constraints.maxHeight
         else placeables.maxOfOrNull { it.height } ?: 0
-        val xs = MushafFit.placeRtl(IntArray(placeables.size) { placeables[it].width }, width, centered, naturalGapPx)
+        val widths = IntArray(placeables.size) { placeables[it].width }
+        val xs = MushafFit.placeRtl(widths, width, centered, naturalGapPx)
+        geo.xs = xs; geo.widths = widths
+        val base = placeables.firstOrNull { it[FirstBaseline] != androidx.compose.ui.layout.AlignmentLine.Unspecified }
+        geo.lineY = if (base == null) Float.NaN else (height - base.height) / 2f + base[FirstBaseline] + fontPx * 0.16f
         layout(width, height) {
             placeables.forEachIndexed { i, p -> p.place(xs[i], (height - p.height) / 2) }
         }
     }
 }
 
+/**
+ * Surah heading: the supplied decoration PNG (aspect preserved) with the surah name from header-surah-name.ttf centered
+ * in its inner opening. The size comes from the decoration's geometry ([MushafFit.headerTitlePx]), not from the page text.
+ */
 @Composable
 private fun SurahHeaderLine(
-    title: String, painter: Painter, fontPx: Float, slotPx: Float, widthPx: Float, style: MushafStyle,
+    surah: Int, nameAr: String, painter: Painter, slotPx: Float, widthPx: Float, style: MushafStyle,
 ) {
     val density = LocalDensity.current
-    val headerPx = min(slotPx, widthPx / MushafFit.HEADER_ASPECT)
-    val titleSp: TextUnit = with(density) { min(fontPx * 1.25f, headerPx * 0.5f).toSp() }
+    val headerHeightPx = min(slotPx, widthPx / MushafFit.HEADER_ASPECT)
+    val titleSp: TextUnit = with(density) { MushafFit.headerTitlePx(headerHeightPx).toSp() }
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Image(
             painter = painter,
@@ -157,6 +209,6 @@ private fun SurahHeaderLine(
             contentScale = ContentScale.Fit,
             colorFilter = style.headerTint?.let { ColorFilter.tint(it) },
         )
-        Text(text = title, style = style.textStyle(titleSp), maxLines = 1, softWrap = false)
+        SurahNameText(surah, nameAr, titleSp, style.ink)
     }
 }

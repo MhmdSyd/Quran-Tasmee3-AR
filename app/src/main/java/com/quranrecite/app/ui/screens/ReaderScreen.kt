@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -42,6 +43,7 @@ import com.quranrecite.app.domain.QuranConstants
 import com.quranrecite.app.domain.QuranPage
 import com.quranrecite.app.domain.SurahInfo
 import com.quranrecite.app.ui.mushaf.MushafPageFrame
+import com.quranrecite.app.ui.mushaf.SurahNameText
 import com.quranrecite.app.ui.mushaf.firstSurah
 import com.quranrecite.app.ui.mushaf.toArabicDigits
 import com.quranrecite.app.ui.theme.Muted
@@ -69,7 +71,8 @@ fun ReaderScreen(
     val currentPage by produceState<QuranPage?>(null, current, data) { value = data.page(current) }
     var showSurahs by remember { mutableStateOf(false) }
 
-    val surahTitle = currentPage?.firstSurah()?.let { surahs.getOrNull(it - 1)?.nameAr }
+    val titleSurah = currentPage?.firstSurah()
+    val titleName = titleSurah?.let { surahs.getOrNull(it - 1)?.nameAr }
     fun goTo(p: Int) = scope.launch { pager.scrollToPage((p - 1).coerceIn(0, QuranConstants.PAGE_COUNT - 1)) }
 
     Column(Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 8.dp)) {
@@ -77,7 +80,8 @@ fun ReaderScreen(
             OutlinedButton(onClick = { showSurahs = true }) {
                 MenuIcon(MaterialTheme.colorScheme.primary, 18.dp)
                 Spacer(Modifier.width(6.dp))
-                Text(surahTitle?.let { "سورة $it" } ?: "الفهرس")
+                if (titleSurah != null && titleName != null) SurahNameText(titleSurah, titleName, 22.sp, LocalContentColor.current)
+                else Text("الفهرس")
             }
             Spacer(Modifier.weight(1f))
             Text("صفحة ${current.toArabicDigits()}", fontSize = 14.sp, color = Muted)

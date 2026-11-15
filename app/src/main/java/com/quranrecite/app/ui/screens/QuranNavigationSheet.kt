@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -37,7 +38,7 @@ import com.quranrecite.app.domain.JuzStarts
 import com.quranrecite.app.domain.QuranConstants
 import com.quranrecite.app.domain.SurahInfo
 import com.quranrecite.app.ui.mushaf.toArabicDigits
-import com.quranrecite.app.ui.theme.HafsFont
+import com.quranrecite.app.ui.mushaf.SurahNameText
 import com.quranrecite.app.ui.theme.Muted
 
 /** Parses western or Arabic-Indic digits; returns null if not a number inside 1..[max]. */
@@ -78,7 +79,7 @@ fun QuranNavigationSheet(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Text(s.number.toArabicDigits(), color = Muted, fontSize = 14.sp)
-                        Text(s.nameAr, fontFamily = HafsFont, fontSize = 22.sp)
+                        SurahNameText(s.number, s.nameAr, 24.sp, LocalContentColor.current)
                         Spacer(Modifier.weight(1f))
                         Text("${s.ayahCount.toArabicDigits()} آية · ص ${s.startPage.toArabicDigits()}", color = Muted, fontSize = 13.sp)
                     }

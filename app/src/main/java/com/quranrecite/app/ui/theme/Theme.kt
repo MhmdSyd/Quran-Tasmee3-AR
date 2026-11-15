@@ -25,6 +25,9 @@ val MistakeTint = Color(0xFFF6D9D3)
 
 val HafsFont = FontFamily(Font(R.font.uthmanic_hafs))
 
+/** header-surah-name.ttf: ONLY for surah names/headings (ligature/PUA glyph per surah), never for ayah text. */
+val SurahNameFont = FontFamily(Font(R.font.header_surah_name))
+
 @Composable
 fun QuranTheme(content: @Composable () -> Unit) {
     MaterialTheme(

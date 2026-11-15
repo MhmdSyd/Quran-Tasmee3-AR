@@ -13,3 +13,6 @@ Redistribution status is stated as *found*, not as legal clearance. **Verify bef
 | Design reference | `docs/design/` | Project-internal | – |
 
 The UI font (Cairo) is **not** bundled.
+
+## header-surah-name.ttf
+Surah-name font supplied by the project owner (res/font/header_surah_name.ttf; renamed because Android resource names cannot contain hyphens). One glyph per surah 2..114 at U+E000+n. Used only for surah names/headings.
