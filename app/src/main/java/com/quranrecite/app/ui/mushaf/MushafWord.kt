@@ -42,13 +42,20 @@ internal fun MushafWord(
         else -> when (v) {
             WordVisual.Normal, WordVisual.Revealed -> style.ink
             WordVisual.Correct -> style.correct
-            WordVisual.Current -> style.currentText
+            WordVisual.Expected ->
+            drawLine(s.expectedLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 3f.dp.toPx())
+        WordVisual.Skipped ->
+            drawLine(
+                s.skippedLine, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = 2f.dp.toPx(),
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f.dp.toPx(), 4f.dp.toPx())),
+            )
+        WordVisual.Current -> style.currentText
             WordVisual.Uncertain -> style.uncertainText
-            WordVisual.Hidden, WordVisual.Mistake -> Color.Transparent
+            WordVisual.Hidden, WordVisual.Mistake, WordVisual.Expected, WordVisual.Skipped -> Color.Transparent
         }
     }
     var baseline by remember { mutableFloatStateOf(Float.NaN) }
-    val hidden = v == WordVisual.Hidden || v == WordVisual.Mistake
+    val hidden = v == WordVisual.Hidden || v == WordVisual.Mistake || v == WordVisual.Expected || v == WordVisual.Skipped
     var modifier = Modifier.drawBehind { drawDecoration(v, baseline, fontPx, style) }
     if (onClick != null) modifier = modifier.clickable(onClick = onClick)
     if (hidden) modifier = modifier.clearAndSetSemantics { contentDescription = HIDDEN_DESCRIPTION }

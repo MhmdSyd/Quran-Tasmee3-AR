@@ -55,10 +55,16 @@ fun AppNav(container: AppContainer) {
                     }
                 },
                 onBack = { nav.popBackStack() },
+                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
             )
         }
         composable(Routes.SUMMARY) {
-            SummaryScreen(container = container, onDone = { nav.popBackStack() })
+            SummaryScreen(
+                container = container,
+                onDone = { nav.popBackStack() },
+                onRetry = { nav.navigate(Routes.recite(it)) { popUpTo(Routes.SUMMARY) { inclusive = true } } },
+                onNextPage = { nav.navigate(Routes.recite(it)) { popUpTo(Routes.SUMMARY) { inclusive = true } } },
+            )
         }
         composable(Routes.SETTINGS) {
             SettingsScreen(

@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.TextUnit
 import com.quranrecite.app.ui.theme.Gold
 import com.quranrecite.app.ui.theme.GoldDark
+import com.quranrecite.app.ui.theme.Green
 import com.quranrecite.app.ui.theme.GreenDark
 import com.quranrecite.app.ui.theme.HafsFont
 import com.quranrecite.app.ui.theme.Ink
@@ -31,6 +32,8 @@ data class MushafStyle(
     val uncertainFill: Color = Gold.copy(alpha = 0.28f),
     val uncertainLine: Color = GoldDark,
     val hiddenLine: Color = Color(0xFF8F8668),
+    val expectedLine: Color = Green,
+    val skippedLine: Color = GoldDark,
     val mistakeLine: Color = MistakeRed,
     val mistakeFill: Color = MistakeTint,
     /** null = surah_header_bg.png exactly as supplied. A tint keeps the PNG's alpha. */

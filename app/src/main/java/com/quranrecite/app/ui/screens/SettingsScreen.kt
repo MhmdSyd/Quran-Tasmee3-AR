@@ -48,7 +48,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenAsrDiagnos
         )
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("إظهار الخطأ فوراً")
+            Text("إظهار علامات المراجعة فوراً")
             Switch(
                 checked = s.showMistakeImmediately,
                 onCheckedChange = { v -> repo.update { it.copy(showMistakeImmediately = v) } },

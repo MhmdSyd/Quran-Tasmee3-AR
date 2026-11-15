@@ -5,8 +5,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-enum class Strictness { Lenient, Normal, Strict }
-
 data class RecitationSettings(
     val strictness: Strictness = Strictness.Normal,
     val fontScale: Float = 1f,

@@ -1,10 +1,13 @@
 package com.quranrecite.app.di
 
 import android.content.Context
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import com.quranrecite.app.data.QuranRepository
 import com.quranrecite.app.data.SqliteQuranRepository
 import com.quranrecite.app.ui.mushaf.MushafDataSource
-import com.quranrecite.app.recitation.NoOpRecitationMatcher
+import com.quranrecite.app.recitation.TrackingRecitationMatcher
 import com.quranrecite.app.recitation.RecitationMatcher
 import com.quranrecite.app.session.InMemorySessionStore
 import com.quranrecite.app.session.SessionStore
@@ -20,7 +23,10 @@ class AppContainer(context: Context) {
     /** Agent 4: offline ASR. Construction is cheap; the model loads on prepare()/start(). Also exposes metrics + benchmark. */
     val asrEngine = SherpaSpeechEngine(context.applicationContext)
     val speechEngine: SpeechEngine = asrEngine
-    val recitationMatcher: RecitationMatcher = NoOpRecitationMatcher() // Agent 4
     val settingsRepository: SettingsRepository = PrefsSettingsRepository(context.applicationContext)
+    /** Agent 5: word matching + position tracking. Strictness is read from the settings on every event. */
+    val recitationMatcher: RecitationMatcher = TrackingRecitationMatcher { settingsRepository.settings.value.strictness }
+    /** Survives screen changes; used to stop the microphone when the recitation screen is left. */
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val sessionStore: SessionStore = InMemorySessionStore()
 }

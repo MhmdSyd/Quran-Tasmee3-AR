@@ -20,3 +20,6 @@ Assets: `qpc-hafs.db`, `qpc-v1-15-lines.db`, Uthmanic Hafs font (`res/font`), su
 UI reference: `docs/design/Quran_Recitation_App_Design.html`. Hand-off notes: `AGENT_1_HANDOFF.md`.
 
 Speech recognition (Agent 4): `speech/asr/`, notes in `AGENT_4_HANDOFF.md`. On-device check: Settings -> ASR diagnostics.
+
+## Recitation matching (Agent 5)
+See `AGENT_5_HANDOFF.md`. Pure-Kotlin matcher in `recitation/`, session model in `session/`. Test fixture: `python3 tools/export_test_pages.py [--check]`.

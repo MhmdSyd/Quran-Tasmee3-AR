@@ -36,24 +36,40 @@ enum class WordVisual {
     /** Recognition not confident: dimmed text, gold dashed underline on a gold tint. */
     Uncertain,
 
-    /** Wrong word: stays hidden, red underline on a red tint. */
+    /** Wrong word: stays hidden, red underline on a red tint. (Not produced by the matcher: it never judges pronunciation.) */
     Mistake,
+
+    /** Hidden, and the word the reciter is expected to say next: stronger green underline. */
+    Expected,
+
+    /** Hidden, passed without being recognised (possibly skipped): dashed gold underline, no tint. */
+    Skipped,
 }
 
 fun WordState.toVisual(): WordVisual = when (this) {
     WordState.Hidden -> WordVisual.Hidden
     WordState.Revealed -> WordVisual.Revealed
-    WordState.Mistake -> WordVisual.Mistake
+    WordState.Uncertain -> WordVisual.Uncertain
+    WordState.Skipped -> WordVisual.Skipped
 }
 
 /**
  * Adapter from the matcher's progress to [MushafPage]'s `wordStates`.
- * [highlightWordId] (optional) is drawn as [WordVisual.Current], e.g. the word that was just recognised.
+ * The word just recognised is drawn as [WordVisual.Current], the next expected (still hidden) word as
+ * [WordVisual.Expected]. With [showReviewMarks] = false, uncertain words look like normal revealed words and skipped
+ * words stay plain hidden: the markers then appear only in the summary.
  */
-fun RecitationProgress.toWordVisuals(highlightWordId: Int? = null): Map<Int, WordVisual> {
-    val out = HashMap<Int, WordVisual>(wordStates.size + 1)
-    for ((id, state) in wordStates) out[id] = state.toVisual()
-    if (highlightWordId != null) out[highlightWordId] = WordVisual.Current
+fun RecitationProgress.toWordVisuals(showReviewMarks: Boolean = true): Map<Int, WordVisual> {
+    val out = HashMap<Int, WordVisual>(wordStates.size + 2)
+    for ((id, state) in wordStates) {
+        out[id] = when {
+            state == WordState.Uncertain && !showReviewMarks -> WordVisual.Revealed
+            state == WordState.Skipped && !showReviewMarks -> WordVisual.Hidden
+            else -> state.toVisual()
+        }
+    }
+    currentWordId?.let { if (out[it] == null || out[it] == WordVisual.Hidden) out[it] = WordVisual.Expected }
+    lastRecognizedId?.let { if (wordStates[it] == WordState.Revealed || wordStates[it] == WordState.Uncertain) out[it] = WordVisual.Current }
     return out
 }
 
