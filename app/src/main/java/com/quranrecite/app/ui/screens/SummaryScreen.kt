@@ -50,7 +50,7 @@ import com.quranrecite.app.ui.theme.Ink
 import com.quranrecite.app.ui.theme.Muted
 import com.quranrecite.app.ui.theme.Paper
 
-private val ScreenBg = Color(0xFFFBF6EA)
+private val ScreenBg = Color.White
 private val RingTrack = Color(0xFFE7DFC6)
 private val ReviewInk = Color(0xFF8A2D20)
 

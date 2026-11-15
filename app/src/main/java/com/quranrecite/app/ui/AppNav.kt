@@ -14,9 +14,11 @@ import com.quranrecite.app.ui.screens.ReaderScreen
 import com.quranrecite.app.ui.screens.RecitationScreen
 import com.quranrecite.app.ui.screens.SettingsScreen
 import com.quranrecite.app.ui.screens.SummaryScreen
+import com.quranrecite.app.ui.screens.WelcomeScreen
 import kotlinx.coroutines.launch
 
 object Routes {
+    const val WELCOME = "welcome"
     const val READER = "reader/{page}"
     const val RECITE = "recite/{page}"
     const val SUMMARY = "summary"
@@ -33,7 +35,12 @@ fun AppNav(container: AppContainer) {
     val nav = rememberNavController()
     val scope = rememberCoroutineScope()
 
-    NavHost(navController = nav, startDestination = Routes.reader(1)) {
+    NavHost(navController = nav, startDestination = Routes.WELCOME) {
+        composable(Routes.WELCOME) {
+            WelcomeScreen(onContinue = {
+                nav.navigate(Routes.reader(1)) { popUpTo(Routes.WELCOME) { inclusive = true } }
+            })
+        }
         composable(Routes.READER, pageArg) { entry ->
             val page = entry.arguments?.getInt("page") ?: 1
             ReaderScreen(

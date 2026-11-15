@@ -14,7 +14,7 @@ import com.quranrecite.app.R
 // Palette taken from Quran_Recitation_App_Design.html
 val Ink = Color(0xFF1F2A24)
 val Muted = Color(0xFF5B6258)
-val Paper = Color(0xFFFFFDF6)
+val Paper = Color(0xFFFFFFFF)
 val Gold = Color(0xFFD9C48A)
 val GoldDark = Color(0xFFB8923A)
 val Green = Color(0xFF1F6B4F)

@@ -37,3 +37,10 @@ Drawn per line in `JustifiedLine` from the real word positions/widths (from `Mus
 | Hidden words: connected underline | present |
 
 Not fixed / worth knowing: nothing could be compiled or run on a device, so please run `./gradlew testDebugUnitTest assembleDebug` and look at a surah-opening page (e.g. 2, 187, 604) and a partly revealed page. No git repo/remote was in the upload, so nothing was committed or pushed.
+
+## Follow-up (UI round 2)
+- Hidden-word underline: `hiddenLine` = gray `0x738A8A8A` (~45% opacity), 0.75dp (`MushafStyle`, `MushafPage`).
+- Background: `Paper` / `@color/paper` / recitation + summary `ScreenBg` = pure white.
+- Recitation controls: arrows, mic, "تلميح", "إظهار الآية" are all 48dp high; row padding = the reader's bottom bar (8dp vertical), so the page area has the same size while reading and reciting. Hint/show-ayah are compact text buttons (no label under them).
+- Welcome page: `WelcomeScreen` (white, `res/drawable-nodpi/bismillah.png`, transparent-background version of the supplied image), start destination, ~2.2 s or tap, then the reader opens at page 1.
+- Not compiled/run (no Android SDK here).

@@ -85,7 +85,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 
-private val ScreenBg = Color(0xFFFBF6EA)
+private val ScreenBg = Color.White
 
 // Microphone toggle colours: idle = the existing start green, reciting = amber, paused = slate blue.
 private val MicActive = Color(0xFFB5651D)
@@ -282,25 +282,26 @@ fun RecitationScreen(
         // The row is forced LTR so the arrows stay on the left and the microphone on the right in this RTL screen.
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(
-                Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                // same height/padding as the reader's bottom bar (48dp controls, 8dp vertical) so the page keeps its size
+                Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(
                         onClick = { onArrow(curPage + 1) }, enabled = !finishing && !switching && curPage < QuranConstants.PAGE_COUNT,
                         contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.size(44.dp).semantics { contentDescription = "الصفحة التالية" },
-                    ) { Text("<", fontSize = 20.sp) }
+                        modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة التالية" },
+                    ) { Text("<", fontSize = 22.sp) }
                     OutlinedButton(
                         onClick = { onArrow(curPage - 1) }, enabled = !finishing && !switching && curPage > 1,
                         contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.size(44.dp).semantics { contentDescription = "الصفحة السابقة" },
-                    ) { Text(">", fontSize = 20.sp) }
+                        modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة السابقة" },
+                    ) { Text(">", fontSize = 22.sp) }
                 }
                 Spacer(Modifier.weight(1f))
-                RoundAction("تلميح", enabled = !finishing && !progress.finished, onClick = { matcher.hint() }) { BulbIcon(Ink) }
-                RoundAction("إظهار الآية", enabled = !finishing && !switching, onClick = ::onShowAyah, width = 76.dp) { EyeIcon(Ink) }
+                ControlPill("تلميح", enabled = !finishing && !progress.finished, onClick = { matcher.hint() })
+                ControlPill("إظهار الآية", enabled = !finishing && !switching, onClick = ::onShowAyah)
                 MicButton(state = engineState, onClick = ::onMic)
             }
         }
@@ -371,19 +372,14 @@ private fun StatusLine(
     }
 }
 
+/** Compact 48dp-high text control, the same height as the page arrows and the microphone button. */
 @Composable
-private fun RoundAction(label: String, enabled: Boolean, onClick: () -> Unit, width: androidx.compose.ui.unit.Dp = 64.dp, icon: @Composable () -> Unit) {
-    Column(
-        Modifier.width(width).clickable(enabled = enabled, onClick = onClick).semantics { contentDescription = label },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Box(
-            Modifier.size(48.dp).clip(CircleShape).background(Paper).border(1.5.dp, if (enabled) Gold else Gold.copy(alpha = 0.4f), CircleShape),
-            contentAlignment = Alignment.Center,
-        ) { icon() }
-        Text(label, fontSize = 12.sp, color = if (enabled) Ink else Muted, maxLines = 1)
-    }
+private fun ControlPill(label: String, enabled: Boolean, onClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onClick, enabled = enabled,
+        contentPadding = PaddingValues(horizontal = 10.dp),
+        modifier = Modifier.height(48.dp),
+    ) { Text(label, fontSize = 12.sp, maxLines = 1, softWrap = false) }
 }
 
 /**
@@ -405,14 +401,14 @@ private fun MicButton(state: EngineState, onClick: () -> Unit) {
         else -> Green
     }
     Box(
-        Modifier.size(72.dp).clip(CircleShape).background(if (busy) color.copy(alpha = 0.6f) else color)
+        Modifier.size(48.dp).clip(CircleShape).background(if (busy) color.copy(alpha = 0.6f) else color)
             .clickable(enabled = !busy, onClick = onClick).semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) {
         when (state) {
-            EngineState.Listening -> PauseIcon(Paper)
-            EngineState.Paused -> PlayIcon(Paper)
-            else -> MicIcon(Paper)
+            EngineState.Listening -> PauseIcon(Paper, 24.dp)
+            EngineState.Paused -> PlayIcon(Paper, 24.dp)
+            else -> MicIcon(Paper, 24.dp)
         }
     }
 }
