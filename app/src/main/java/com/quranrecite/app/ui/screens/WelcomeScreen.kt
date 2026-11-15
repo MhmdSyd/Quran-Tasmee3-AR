@@ -30,7 +30,7 @@ import kotlinx.coroutines.delay
 fun WelcomeScreen(onContinue: () -> Unit) {
     val done by rememberUpdatedState(onContinue)
     LaunchedEffect(Unit) {
-        delay(2200)
+        delay(1200)
         done()
     }
     Box(

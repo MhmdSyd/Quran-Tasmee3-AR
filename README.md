@@ -1,22 +1,82 @@
-# Quran Recitation (Android, offline)
+<div align="center">
 
-Offline Madani Mushaf reader (Hafs, 1405H print layout: **604 pages × 15 lines**, pages 1–2 have 8) with a
-recitation mode: the page text is hidden and each word is revealed as the on-device speech recogniser hears it.
-Kotlin + Jetpack Compose. **No `INTERNET` permission, no cloud services, no analytics.** Audio never leaves the device.
+<img src="docs/logo.png" alt="Quran Tasmee3 logo" width="160"/>
 
-> **Status:** see [`FINAL_QA_REPORT.md`](FINAL_QA_REPORT.md) for exactly what has and has not been verified.
-> The speech recogniser gives *approximate* recognition. The app does **not** judge Tajweed; words listed
-> "للمراجعة" (for review) are words whose recognition was uncertain or skipped, not confirmed mistakes.
+# تسميع — Quran Tasmee3
 
-## Get the APK (GitHub Actions)
+**An offline Android app for reading the Madani Mushaf and testing your Quran memorisation by voice.**
+
+[![Android CI](../../actions/workflows/android.yml/badge.svg)](../../actions/workflows/android.yml)
+&nbsp;·&nbsp; Android 8.0+ &nbsp;·&nbsp; No internet permission &nbsp;·&nbsp; Kotlin + Jetpack Compose
+
+</div>
+
+## What is this?
+**تسميع (Tasmee3)** is the Arabic word for reciting the Quran from memory to a listener. This app plays the listener:
+you open a page of the Mushaf, the words are hidden, you recite out loud, and each word appears on the page as the
+app hears it. Everything runs **on your phone**: the speech recogniser, the Quran text and the page layout are
+packaged inside the APK. There is no account, no cloud, no analytics, and the app does not even request the
+`INTERNET` permission, so your voice never leaves the device.
+
+This repository contains the complete Android project and the GitHub Actions workflow that builds the APK.
+
+## Screenshots
+| Reading | Navigate (Surah / Page / Juz) | Recitation |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/01-reader.jpg" width="230"/> | <img src="docs/screenshots/02-navigation.jpg" width="230"/> | <img src="docs/screenshots/03-recitation.jpg" width="230"/> |
+| Standard 15-line Mushaf page | Jump to any surah, page or juz | Hidden words, live reveal, controls |
+
+| Tap a hidden word | Settings |
+|:---:|:---:|
+| <img src="docs/screenshots/04-word-menu.jpg" width="230"/> | <img src="docs/screenshots/05-settings.jpg" width="230"/> |
+| Start from here / reveal this word | Strictness, review marks, diagnostics |
+
+## Features
+**Mushaf reader**
+- Full Madani Mushaf (Hafs, King Fahd Complex print): **604 pages × 15 lines**, exact page and line layout, KFGQPC Uthmanic Hafs font.
+- Surah headings in the decorative frame, with surah names drawn in a dedicated surah-name font.
+- **Navigation button** with three tabs: **Surahs** (all 114, with page numbers), **Page** (1–604, Arabic or western digits) and **Juz** (1–30). Swipe or use the `<` `>` buttons to turn pages.
+
+**Recitation mode**
+- Page words are hidden and replaced by a thin, continuous gray underline that follows the real position and width of the unrevealed words; revealed words appear in place with full diacritics and **nothing moves or reflows**.
+- Live, on-device speech recognition reveals each word as you recite it, with partial skips and uncertain words marked for review.
+- **One microphone button** for start, pause and resume: green mic (ready), amber pause icon (recording), blue play icon (paused). Pausing really stops the microphone, and resuming continues from the same word.
+- **تلميح (Hint)** reveals the next word.
+- **إظهار الآية (Show ayah)** reveals the current ayah; each further press reveals the next ayah, moving on to the next page automatically when needed, without stopping the session.
+- Tap any word to start from there or to reveal just that word.
+- `<` `>` move to the previous/next page without leaving recitation. The Quran page keeps the same size and position as in the reader.
+- Session summary: progress and a list of words **للمراجعة** (for review).
+
+**Other**
+- Welcome page with the Basmala, white background like a printed Mushaf, Arabic right-to-left interface.
+- Settings: recitation strictness (lenient / normal / strict), show review marks immediately, ASR diagnostics.
+
+## Install
+1. Open the **[Releases](../../releases)** page and download the latest `Quran-Tasmee3-*.apk`.
+2. Copy it to your phone and open it (allow *Install unknown apps* for your browser/file manager when asked).
+3. Android 8.0 (API 26) or newer; arm64-v8a, armeabi-v7a and x86_64 are included. The APK is large (~100 MB) because it contains the offline speech model.
+4. On the first recitation, grant the **microphone** permission.
+
+## How to use
+1. Open the navigation button (top) and pick a surah, page or juz.
+2. Press **ابدأ التسميع** to enter recitation mode for that page.
+3. Press the microphone button and recite. Pause or resume with the same button.
+4. Stuck? Press **تلميح** for one word, or **إظهار الآية** for the whole ayah.
+5. Finish the page (or go back) to see the summary of words to review.
+
+## Accuracy and limitations
+- Speech recognition is **approximate**. The app does **not** judge Tajweed. Words marked "للمراجعة" are words whose recognition was uncertain or skipped, not confirmed mistakes.
+- Results depend on the microphone, the room and the reciter; the model is a compact offline one (`quran-asr-small`).
+- Recitation mode works one page at a time; leaving a page by the arrows does not carry its progress into the summary.
+- See [`FINAL_QA_REPORT.md`](FINAL_QA_REPORT.md) for what has and has not been verified, and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) before redistributing (font and data licences).
+
+## Get the APK from GitHub Actions
 1. Push to `main`/`master` (or open **Actions → Android CI → Run workflow**).
 2. When the **build** job finishes, open the run and download the artifact **`Quran-Tasmee3-debug`**
-   (`Quran-Tasmee3-debug.apk`, roughly 100 MB because it bundles the 36 MB model and native libraries for 3 ABIs).
-3. Install it (`adb install Quran-Tasmee3-debug.apk` or copy it to the phone, allowing "unknown sources").
+   (it contains `Quran-Tasmee3-debug.apk`, roughly 100 MB because it bundles the 36 MB model and native libraries for 3 ABIs).
+3. Unzip it and install the APK.
 
-Workflow jobs: `data-checks` (Python, no network) · `build` (fetch assets → debug APK → APK checks → upload APK →
-JVM tests → upload test reports) · `asr-smoke` (real model + real audio on the desktop runtime; needs internet, does not
-block the APK) · `release` (optional, see below).
+Publishing a release: see [`docs/RELEASING.md`](docs/RELEASING.md).
 
 ### Optional signed release APK
 Add these repository secrets (Settings → Secrets and variables → Actions): `RELEASE_KEYSTORE_BASE64`
@@ -63,5 +123,5 @@ See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). Redistribution rights fo
 **not** independently verified; read the notes there before publishing the app.
 
 ## Docs
-`docs/design/` (UI boards) · `docs/handoffs/` (per-agent technical notes: data layer, mushaf, ASR, matching) ·
+`docs/RELEASING.md` (how to publish a release) · `docs/design/` (UI boards) · `docs/handoffs/` (per-agent technical notes: data layer, mushaf, ASR, matching) ·
 `docs/mushaf-previews/` (Python-rendered layout previews, not Android screenshots).
