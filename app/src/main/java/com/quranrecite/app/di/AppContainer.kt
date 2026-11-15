@@ -21,7 +21,10 @@ import com.quranrecite.app.speech.SpeechEngine
  * The recitation in progress. Lives in the container (not in a composable) so that opening Settings from the
  * recitation screen, or any other recomposition of the screen, resumes it instead of restarting from word 1.
  */
-class RecitationSession(val page: Int, val startedAt: Long, val timer: ActiveTimer)
+class RecitationSession(val page: Int, val startedAt: Long, val timer: ActiveTimer) {
+    /** The page being recited now. Differs from [page] (the page the session started on) after "show ayah"/arrows moved on. */
+    @Volatile var currentPage: Int = page
+}
 
 /** Manual DI. Later agents swap the stub implementations here and nowhere else. */
 class AppContainer(context: Context) {

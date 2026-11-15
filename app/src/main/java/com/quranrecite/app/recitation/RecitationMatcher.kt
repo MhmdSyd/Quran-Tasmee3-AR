@@ -75,6 +75,15 @@ data class RecitationProgress(
     val finished: Boolean = false,
 )
 
+/** Outcome of [RecitationMatcher.showAyah]. */
+enum class ShowAyahResult {
+    /** The current ayah (its words on this page) was revealed and the position moved past it. */
+    Shown,
+
+    /** Nothing is left on this page: the caller should continue on the next page and call showAyah again. */
+    PageEnd,
+}
+
 data class ReviewItem(val word: QuranWord, val reason: ReviewReason)
 
 /** Everything the session summary needs, computed from the tracker. Words are the canonical [QuranWord]s. */
@@ -119,6 +128,15 @@ interface RecitationMatcher {
     /** Reveal the expected word (the "hint" button) and move on. */
     fun hint()
 
+    /**
+     * Reveal all words of the ayah at the current position and move the position to the start of the next ayah.
+     * Does not touch the speech state, so recognition simply continues from the new position.
+     */
+    fun showAyah(): ShowAyahResult
+
+    /** Move on to [page] keeping the speech bookkeeping (unlike [begin], which starts a fresh page). */
+    fun continueOnPage(page: QuranPage, basmallah: List<String> = emptyList())
+
     fun report(): RecitationReport
 
     fun reset()
@@ -134,6 +152,8 @@ class NoOpRecitationMatcher : RecitationMatcher {
     override fun moveTo(wordId: Int) {}
     override fun markRecited(wordId: Int) {}
     override fun hint() {}
+    override fun showAyah() = ShowAyahResult.PageEnd
+    override fun continueOnPage(page: QuranPage, basmallah: List<String>) { _progress.value = RecitationProgress(pageNumber = page.number) }
     override fun report() = RecitationReport(_progress.value.pageNumber, 0, 0, 0, emptyList(), emptyList(), emptyList(), 0, 0, false)
     override fun reset() { _progress.value = RecitationProgress() }
 }
@@ -151,6 +171,8 @@ class TrackingRecitationMatcher(strictness: () -> Strictness = { Strictness.Norm
     @Synchronized override fun moveTo(wordId: Int) { tracker.moveTo(wordId); publish() }
     @Synchronized override fun markRecited(wordId: Int) { tracker.markRecited(wordId); publish() }
     @Synchronized override fun hint() { tracker.hint(); publish() }
+    @Synchronized override fun showAyah(): ShowAyahResult = tracker.showAyah().also { publish() }
+    @Synchronized override fun continueOnPage(page: QuranPage, basmallah: List<String>) { tracker.continueOnPage(page, basmallah); publish() }
     @Synchronized override fun report(): RecitationReport = tracker.report()
     @Synchronized override fun reset() { tracker.reset(); publish() }
 

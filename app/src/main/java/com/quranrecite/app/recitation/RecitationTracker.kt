@@ -390,6 +390,42 @@ class RecitationTracker(private val strictness: () -> Strictness = { Strictness.
         afterManualChange()
     }
 
+    /**
+     * "Show ayah": reveals every word of the ayah the cursor is in (the ayah of the next expected word) and puts the
+     * cursor on the first word after it, so the next call shows the next ayah. Words already recognised keep their
+     * state; hidden or skipped ones become [WordState.Revealed] with [ReviewReason.Manual]. Only words of this page are
+     * touched. Returns [ShowAyahResult.PageEnd] when no word of this page is left (the caller moves to the next page).
+     */
+    fun showAyah(): ShowAyahResult {
+        if (n == 0 || cursor >= n) return ShowAyahResult.PageEnd
+        val w = words[cursor]
+        fun same(k: Int) = words[k].surah == w.surah && words[k].ayah == w.ayah
+        var first = cursor
+        while (first > 0 && same(first - 1)) first--
+        var last = cursor
+        while (last + 1 < n && same(last + 1)) last++
+        for (k in first..last) {
+            if (state[k] == WordState.Hidden || state[k] == WordState.Skipped) set(k, WordState.Revealed, ReviewReason.Manual)
+        }
+        if (first < scopeStart) scopeStart = first
+        lastRecognized = last
+        cursor = last + 1
+        afterManualChange()
+        return ShowAyahResult.Shown
+    }
+
+    /**
+     * Continue on another page without losing the speech bookkeeping (segment ids, consumed audio), so audio that was
+     * already handled on the previous page is not matched again against the new one.
+     */
+    fun continueOnPage(page: QuranPage, basmallah: List<String>) {
+        val seg = curSeg; val finalSeg = lastFinalSeg; val finalEnd = lastFinalEndMs
+        val drop = dropBeforeMs; val audioEnd = lastAudioEndMs
+        begin(page, null, basmallah)
+        curSeg = seg; lastFinalSeg = finalSeg; lastFinalEndMs = finalEnd
+        lastAudioEndMs = audioEnd; dropBeforeMs = maxOf(drop, audioEnd)
+    }
+
     // ------------------------------------------------------------------------------------------------ output
 
     fun progress(): RecitationProgress {

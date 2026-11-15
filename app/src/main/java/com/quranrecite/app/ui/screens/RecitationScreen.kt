@@ -7,7 +7,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,9 +20,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -46,7 +52,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quranrecite.app.di.AppContainer
+import com.quranrecite.app.domain.QuranConstants
 import com.quranrecite.app.domain.QuranWord
+import com.quranrecite.app.recitation.ShowAyahResult
 import com.quranrecite.app.session.SessionSummary
 import com.quranrecite.app.session.SummaryText
 import com.quranrecite.app.session.toSummary
@@ -59,7 +67,9 @@ import com.quranrecite.app.ui.components.BackIcon
 import com.quranrecite.app.ui.components.BulbIcon
 import com.quranrecite.app.ui.components.MicIcon
 import com.quranrecite.app.ui.components.SlidersIcon
-import com.quranrecite.app.ui.components.StopIcon
+import com.quranrecite.app.ui.components.EyeIcon
+import com.quranrecite.app.ui.components.PauseIcon
+import com.quranrecite.app.ui.components.PlayIcon
 import com.quranrecite.app.ui.mushaf.MushafMode
 import com.quranrecite.app.ui.mushaf.MushafPageFrame
 import com.quranrecite.app.ui.mushaf.MushafStyle
@@ -76,7 +86,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 
 private val ScreenBg = Color(0xFFFBF6EA)
-private val RingGreen = Color(0xFFCFE3D6)
+
+// Microphone toggle colours: idle = the existing start green, reciting = amber, paused = slate blue.
+private val MicActive = Color(0xFFB5651D)
+private val MicPaused = Color(0xFF3E5C76)
 
 /**
  * Recitation: the real mushaf page with every word hidden; words appear as the matcher recognises them
@@ -102,7 +115,7 @@ fun RecitationScreen(
     val resumed = remember(page) {
         val s = container.activeSession
         val p = matcher.progress.value
-        s != null && s.page == page && p.pageNumber == page && !p.finished
+        s != null && s.page == page && p.pageNumber == s.currentPage && !p.finished
     }
     val session = remember(page) { if (resumed) container.activeSession!! else container.beginSession(page) }
     val startedAt = session.startedAt
@@ -112,6 +125,12 @@ fun RecitationScreen(
     var picked by remember { mutableStateOf<QuranWord?>(null) }
     var finishing by remember { mutableStateOf(false) }
     var feedbackVisible by remember { mutableStateOf(false) }
+    // The page on screen. Starts at the page of the route; "show ayah" and the arrows can move it without leaving the screen,
+    // so the microphone and the session keep running.
+    var curPage by remember(page) { mutableStateOf(if (resumed) session.currentPage else page) }
+    var switching by remember { mutableStateOf(false) }
+    // True while progress.finished was caused by "show ayah" (the page's last ayah was shown): that must not end the session.
+    var finishedByShow by remember { mutableStateOf(false) }
 
     // 1) page + basmala -> matcher
     LaunchedEffect(page) {
@@ -182,7 +201,7 @@ fun RecitationScreen(
         if (finishing) return
         when (engineState) {
             EngineState.Listening -> { timer.pause(); scope.launch { engine.pause() } }
-            EngineState.Paused -> scope.launch { engine.resume() }
+            EngineState.Paused -> { timer.start(); scope.launch { engine.resume() } }
             EngineState.Loading, EngineState.Stopping -> Unit
             else -> if (MicPermission.isGranted(ctx)) startListening() else askMic()
         }
@@ -199,14 +218,43 @@ fun RecitationScreen(
             onFinish(matcher.report().toSummary(startedAt, timer.elapsedMillis()))
         }
     }
-    LaunchedEffect(progress.finished) { if (progress.finished) finish() }
+    LaunchedEffect(progress.finished) {
+        if (!progress.finished) finishedByShow = false else if (!finishedByShow) finish()
+    }
+
+    // Moves the screen (and the matcher) to [target], keeping the audio session and its bookkeeping. Progress of the page
+    // that is left is not carried over: the matcher follows one page at a time.
+    fun moveToPage(target: Int, thenShowAyah: Boolean) {
+        scope.launch {
+            val p = container.mushafData.page(target)
+            matcher.continueOnPage(p, container.mushafData.basmallah())
+            session.currentPage = target
+            curPage = target
+            if (thenShowAyah) { finishedByShow = true; matcher.showAyah() }
+            switching = false
+        }
+    }
+    fun onArrow(target: Int) {
+        if (finishing || switching || target !in 1..QuranConstants.PAGE_COUNT) return
+        switching = true
+        moveToPage(target, thenShowAyah = false)
+    }
+    fun onShowAyah() {
+        if (finishing || switching) return
+        finishedByShow = true
+        if (matcher.showAyah() == ShowAyahResult.Shown) return
+        val next = curPage + 1
+        if (next > QuranConstants.PAGE_COUNT) { finishedByShow = false; finish(); return }   // end of the Quran
+        switching = true
+        moveToPage(next, thenShowAyah = true)
+    }
 
     Column(Modifier.fillMaxSize().background(ScreenBg).systemBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
         // header
         Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButtonBox("رجوع إلى المصحف", onClick = { container.endSession(); onBack() }) { BackIcon(Ink) }
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("تسميع الصفحة ${page.toArabicDigits()}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Ink)
+                Text("تسميع الصفحة ${curPage.toArabicDigits()}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Ink)
                 Text(
                     "${SummaryText.digits(progress.passedWords)} من ${SummaryText.digits(progress.totalWords)} كلمة",
                     fontSize = 12.sp, color = Muted,
@@ -222,7 +270,7 @@ fun RecitationScreen(
         )
 
         MushafPageFrame(
-            pageNumber = page,
+            pageNumber = curPage,
             data = container.mushafData,
             modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp),
             mode = MushafMode.Recitation,
@@ -230,15 +278,31 @@ fun RecitationScreen(
             onWordClick = { if (!finishing) picked = it },
         )
 
-        // controls: hint | microphone | finish
-        Row(
-            Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(28.dp, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            RoundAction("تلميح", enabled = !finishing && !progress.finished, onClick = { matcher.hint() }) { BulbIcon(Ink) }
-            MicButton(listening = engineState == EngineState.Listening, busy = engineState == EngineState.Loading, onClick = ::onMic)
-            RoundAction("إنهاء", enabled = !finishing, onClick = ::finish) { StopIcon(Ink) }
+        // controls (physical left -> right): previous/next page, hint, show ayah, microphone toggle.
+        // The row is forced LTR so the arrows stay on the left and the microphone on the right in this RTL screen.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row(
+                Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(
+                        onClick = { onArrow(curPage - 1) }, enabled = !finishing && !switching && curPage > 1,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.size(44.dp).semantics { contentDescription = "الصفحة السابقة" },
+                    ) { Text("<", fontSize = 20.sp) }
+                    OutlinedButton(
+                        onClick = { onArrow(curPage + 1) }, enabled = !finishing && !switching && curPage < QuranConstants.PAGE_COUNT,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.size(44.dp).semantics { contentDescription = "الصفحة التالية" },
+                    ) { Text(">", fontSize = 20.sp) }
+                }
+                Spacer(Modifier.weight(1f))
+                RoundAction("تلميح", enabled = !finishing && !progress.finished, onClick = { matcher.hint() }) { BulbIcon(Ink) }
+                RoundAction("إظهار الآية", enabled = !finishing && !switching, onClick = ::onShowAyah, width = 76.dp) { EyeIcon(Ink) }
+                MicButton(state = engineState, onClick = ::onMic)
+            }
         }
     }
 
@@ -308,9 +372,9 @@ private fun StatusLine(
 }
 
 @Composable
-private fun RoundAction(label: String, enabled: Boolean, onClick: () -> Unit, icon: @Composable () -> Unit) {
+private fun RoundAction(label: String, enabled: Boolean, onClick: () -> Unit, width: androidx.compose.ui.unit.Dp = 64.dp, icon: @Composable () -> Unit) {
     Column(
-        Modifier.width(64.dp).clickable(enabled = enabled, onClick = onClick).semantics { contentDescription = label },
+        Modifier.width(width).clickable(enabled = enabled, onClick = onClick).semantics { contentDescription = label },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -318,21 +382,37 @@ private fun RoundAction(label: String, enabled: Boolean, onClick: () -> Unit, ic
             Modifier.size(48.dp).clip(CircleShape).background(Paper).border(1.5.dp, if (enabled) Gold else Gold.copy(alpha = 0.4f), CircleShape),
             contentAlignment = Alignment.Center,
         ) { icon() }
-        Text(label, fontSize = 13.sp, color = if (enabled) Ink else Muted)
+        Text(label, fontSize = 12.sp, color = if (enabled) Ink else Muted, maxLines = 1)
     }
 }
 
+/**
+ * One toggle for start / pause / resume. Idle: green microphone. Reciting: amber with a pause icon (no glow).
+ * Paused: slate blue with a play icon. The action itself lives in onMic(): it calls engine.start / pause / resume.
+ */
 @Composable
-private fun MicButton(listening: Boolean, busy: Boolean, onClick: () -> Unit) {
-    val description = when { listening -> "إيقاف الاستماع مؤقتًا"; busy -> "جارٍ التحميل"; else -> "ابدأ الاستماع" }
+private fun MicButton(state: EngineState, onClick: () -> Unit) {
+    val busy = state == EngineState.Loading || state == EngineState.Stopping
+    val description = when (state) {
+        EngineState.Listening -> "إيقاف التسميع مؤقتًا"
+        EngineState.Paused -> "متابعة التسميع"
+        EngineState.Loading, EngineState.Stopping -> "جارٍ التحميل"
+        else -> "ابدأ التسميع"
+    }
+    val color = when (state) {
+        EngineState.Listening -> MicActive
+        EngineState.Paused -> MicPaused
+        else -> Green
+    }
     Box(
-        Modifier.size(84.dp).clip(CircleShape).background(if (listening) RingGreen else Color.Transparent)
-            .clickable(onClick = onClick).semantics { contentDescription = description },
+        Modifier.size(72.dp).clip(CircleShape).background(if (busy) color.copy(alpha = 0.6f) else color)
+            .clickable(enabled = !busy, onClick = onClick).semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) {
-        Box(
-            Modifier.size(72.dp).clip(CircleShape).background(if (busy) Green.copy(alpha = 0.6f) else Green),
-            contentAlignment = Alignment.Center,
-        ) { MicIcon(Paper) }
+        when (state) {
+            EngineState.Listening -> PauseIcon(Paper)
+            EngineState.Paused -> PlayIcon(Paper)
+            else -> MicIcon(Paper)
+        }
     }
 }

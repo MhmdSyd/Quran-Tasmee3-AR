@@ -87,3 +87,31 @@ fun MenuIcon(color: Color, size: Dp = 22.dp) = Canvas(Modifier.size(size)) {
     val k = this.size.width / 24f
     for (y in listOf(6f, 12f, 18f)) drawLine(color, Offset(4 * k, y * k), Offset(20 * k, y * k), strokeWidth = 2 * k, cap = StrokeCap.Round)
 }
+
+@Composable
+fun PauseIcon(color: Color, size: Dp = 30.dp) = Canvas(Modifier.size(size)) {
+    val k = this.size.width / 24f
+    drawRoundRect(color, Offset(6 * k, 5 * k), Size(4 * k, 14 * k), CornerRadius(1.5f * k))
+    drawRoundRect(color, Offset(14 * k, 5 * k), Size(4 * k, 14 * k), CornerRadius(1.5f * k))
+}
+
+@Composable
+fun PlayIcon(color: Color, size: Dp = 30.dp) = Canvas(Modifier.size(size)) {
+    val k = this.size.width / 24f
+    val p = Path().apply { moveTo(8 * k, 5 * k); lineTo(19 * k, 12 * k); lineTo(8 * k, 19 * k); close() }
+    drawPath(p, color)
+}
+
+/** Eye: "show". */
+@Composable
+fun EyeIcon(color: Color, size: Dp = 22.dp) = Canvas(Modifier.size(size)) {
+    val k = this.size.width / 24f
+    val p = Path().apply {
+        moveTo(2 * k, 12 * k)
+        quadraticBezierTo(12 * k, 2 * k, 22 * k, 12 * k)
+        quadraticBezierTo(12 * k, 22 * k, 2 * k, 12 * k)
+        close()
+    }
+    drawPath(p, color, style = stroke(k))
+    drawCircle(color, radius = 3 * k, center = Offset(12 * k, 12 * k))
+}
