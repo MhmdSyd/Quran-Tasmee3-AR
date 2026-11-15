@@ -14,6 +14,8 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
+        // sherpa-onnx native libs (fetched by tools/fetch_asr_assets.sh into src/main/jniLibs)
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
     }
 
     buildTypes {
@@ -27,8 +29,10 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
+    // The ASR model is a 36 MB asset and each ABI adds a ~16-27 MB uncompressed .so; keep them mmap-able.
+    packaging { jniLibs { useLegacyPackaging = false } }
     // SQLite assets must stay byte-identical when copied to app storage.
-    androidResources { noCompress += listOf("db") }
+    androidResources { noCompress += listOf("db", "onnx") }
 }
 
 dependencies {

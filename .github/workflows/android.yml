@@ -16,14 +16,39 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Validate Quran data (python)
         run: python3 tools/validate_quran_data.py
-      - name: Unit tests (data integrity)
+
+      # ---- Agent 4: offline ASR assets (build-time download, pinned + SHA-256 verified) ----
+      - name: Fetch ASR model + sherpa-onnx native libs
+        run: bash tools/fetch_asr_assets.sh
+      - name: Model alphabet vs Hafs text
+        run: python3 tools/check_model_alphabet.py
+      - name: ASR smoke test (real model, same sherpa-onnx version as the app)
+        run: |
+          pip install "sherpa-onnx==2.0.1" soundfile numpy scipy
+          python3 tools/asr_smoke_test.py
+
+      - name: Unit tests
         run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: APK checks (offline guarantees)
+        run: |
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          AAPT2=$(ls $ANDROID_HOME/build-tools/*/aapt2 | tail -1)
+          echo "--- permissions"; "$AAPT2" dump permissions "$APK"
+          if "$AAPT2" dump permissions "$APK" | grep -q "android.permission.INTERNET"; then echo "INTERNET permission must not be declared"; exit 1; fi
+          unzip -l "$APK" | grep -E "assets/asr/quran-asr-small/(model.int8.onnx|tokens.txt|model-manifest.json)" 
+          unzip -l "$APK" | grep -c "assets/asr/quran-asr-small/model.int8.onnx" | grep -q 1
+          for abi in arm64-v8a armeabi-v7a x86_64; do unzip -l "$APK" | grep -q "lib/$abi/libsherpa-onnx-jni.so" || { echo "missing $abi native lib"; exit 1; }; done
+          ls -la "$APK"
+
       - uses: actions/upload-artifact@v4
         with:
           name: quran-recitation-debug-apk

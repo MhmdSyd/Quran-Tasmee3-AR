@@ -1,0 +1,11 @@
+{
+  "name": "quran-asr-small",
+  "source": "https://huggingface.co/Abdou/quran-asr-small",
+  "sourceCommit": "0c2744b9d70aaf45ba574c30c5d318c575258e66",
+  "license": "MIT (model); training data keeps own terms (tarteel-ai/tlog CC-BY-4.0)",
+  "runtime": "sherpa-onnx v2.0.1, OfflineRecognizer, zipformer_ctc loader (Conformer-CTC, greedy)",
+  "files": {
+    "model.int8.onnx": { "sha256": "88f9df290d57b8890275d79187b77515aeeb12626a42bc76cbd0f8bfcaff00f0", "minBytes": 35000000, "maxBytes": 38000000 },
+    "tokens.txt": { "bytes": 180 }
+  }
+}

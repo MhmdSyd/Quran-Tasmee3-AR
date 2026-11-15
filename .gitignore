@@ -12,3 +12,8 @@
 *.aab
 *.jks
 *.keystore
+
+# Fetched by tools/fetch_asr_assets.sh (pinned + SHA-256 verified)
+/app/src/main/jniLibs/
+/app/src/main/assets/asr/quran-asr-small/model.int8.onnx
+/app/src/main/assets/asr/quran-asr-small/*.part

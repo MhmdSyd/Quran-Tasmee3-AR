@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -22,7 +23,7 @@ import com.quranrecite.app.di.AppContainer
 import com.quranrecite.app.settings.Strictness
 
 @Composable
-fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
+fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenAsrDiagnostics: () -> Unit = {}) {
     val repo = container.settingsRepository
     val s by repo.settings.collectAsState()
     Column(Modifier.fillMaxSize().systemBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -54,6 +55,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             )
         }
 
+        OutlinedButton(onClick = onOpenAsrDiagnostics) { Text("تشخيص التعرف على الصوت (ASR)") }
         Button(onClick = onBack) { Text("رجوع") }
     }
 }

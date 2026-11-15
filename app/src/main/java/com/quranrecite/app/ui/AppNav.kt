@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.quranrecite.app.di.AppContainer
 import com.quranrecite.app.session.SessionSummary
+import com.quranrecite.app.ui.screens.AsrDiagnosticsScreen
 import com.quranrecite.app.ui.screens.ReaderScreen
 import com.quranrecite.app.ui.screens.RecitationScreen
 import com.quranrecite.app.ui.screens.SettingsScreen
@@ -20,6 +21,7 @@ object Routes {
     const val RECITE = "recite/{page}"
     const val SUMMARY = "summary"
     const val SETTINGS = "settings"
+    const val ASR_DIAGNOSTICS = "asr-diagnostics"
     fun reader(page: Int) = "reader/$page"
     fun recite(page: Int) = "recite/$page"
 }
@@ -59,7 +61,14 @@ fun AppNav(container: AppContainer) {
             SummaryScreen(container = container, onDone = { nav.popBackStack() })
         }
         composable(Routes.SETTINGS) {
-            SettingsScreen(container = container, onBack = { nav.popBackStack() })
+            SettingsScreen(
+                container = container,
+                onBack = { nav.popBackStack() },
+                onOpenAsrDiagnostics = { nav.navigate(Routes.ASR_DIAGNOSTICS) },
+            )
+        }
+        composable(Routes.ASR_DIAGNOSTICS) {
+            AsrDiagnosticsScreen(container = container, onBack = { nav.popBackStack() })
         }
     }
 }

@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Fully offline app: deliberately NO INTERNET permission. -->
-    <!-- Used by the offline speech engine (Agent 3). -->
+    <!-- Used by the offline speech engine (Agent 4: SherpaSpeechEngine). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
