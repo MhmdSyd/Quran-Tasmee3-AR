@@ -89,7 +89,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: quran-recitation-debug-apk
+          name: Quran-Tasmee3-debug
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
@@ -166,6 +166,6 @@ jobs:
         if: steps.sign.outputs.enabled == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: quran-recitation-release-apk
+          name: Quran-Tasmee3-release
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error

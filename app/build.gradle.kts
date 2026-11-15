@@ -4,6 +4,11 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// APK file name: Quran-Tasmee3-debug.apk / Quran-Tasmee3-release.apk
+base {
+    archivesName.set("Quran-Tasmee3")
+}
+
 android {
     namespace = "com.quranrecite.app"
     compileSdk = 34

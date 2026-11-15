@@ -10,9 +10,9 @@ Kotlin + Jetpack Compose. **No `INTERNET` permission, no cloud services, no anal
 
 ## Get the APK (GitHub Actions)
 1. Push to `main`/`master` (or open **Actions → Android CI → Run workflow**).
-2. When the **build** job finishes, open the run and download the artifact **`quran-recitation-debug-apk`**
-   (`app-debug.apk`, roughly 100 MB because it bundles the 36 MB model and native libraries for 3 ABIs).
-3. Install it (`adb install app-debug.apk` or copy it to the phone, allowing "unknown sources").
+2. When the **build** job finishes, open the run and download the artifact **`Quran-Tasmee3-debug`**
+   (`Quran-Tasmee3-debug.apk`, roughly 100 MB because it bundles the 36 MB model and native libraries for 3 ABIs).
+3. Install it (`adb install Quran-Tasmee3-debug.apk` or copy it to the phone, allowing "unknown sources").
 
 Workflow jobs: `data-checks` (Python, no network) · `build` (fetch assets → debug APK → APK checks → upload APK →
 JVM tests → upload test reports) · `asr-smoke` (real model + real audio on the desktop runtime; needs internet, does not
@@ -21,7 +21,7 @@ block the APK) · `release` (optional, see below).
 ### Optional signed release APK
 Add these repository secrets (Settings → Secrets and variables → Actions): `RELEASE_KEYSTORE_BASE64`
 (`base64 -w0 your.jks`), `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`. Then push a tag
-`v*` or run the workflow manually with *release = true*; the artifact is `quran-recitation-release-apk`.
+`v*` or run the workflow manually with *release = true*; the artifact is `Quran-Tasmee3-release`.
 Without the secrets the release job is skipped. Keystores are git-ignored; nothing secret is stored in the repo.
 
 ## Build locally
@@ -29,7 +29,7 @@ Requires JDK 17 and the Android SDK (platform 34).
 ```
 bash tools/fetch_asr_assets.sh      # once: ASR model (36 MB) + sherpa-onnx native libs; pinned + SHA-256 verified
 ./gradlew testDebugUnitTest         # JVM tests
-./gradlew assembleDebug             # app/build/outputs/apk/debug/app-debug.apk
+./gradlew assembleDebug             # app/build/outputs/apk/debug/Quran-Tasmee3-debug.apk
 ```
 The fetch step is build-time only. Without it the app still builds but the speech engine reports `ModelMissing`.
 Python checks (no dependencies beyond the standard library): `python3 tools/validate_quran_data.py`,
