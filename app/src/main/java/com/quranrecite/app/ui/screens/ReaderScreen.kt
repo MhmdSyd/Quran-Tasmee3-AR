@@ -1,25 +1,31 @@
 package com.quranrecite.app.ui.screens
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.quranrecite.app.domain.JuzStarts
+import com.quranrecite.app.ui.components.GearIcon
+import com.quranrecite.app.ui.components.MenuIcon
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +44,6 @@ import com.quranrecite.app.domain.SurahInfo
 import com.quranrecite.app.ui.mushaf.MushafPageFrame
 import com.quranrecite.app.ui.mushaf.firstSurah
 import com.quranrecite.app.ui.mushaf.toArabicDigits
-import com.quranrecite.app.ui.theme.HafsFont
 import com.quranrecite.app.ui.theme.Muted
 import kotlinx.coroutines.launch
 
@@ -46,7 +51,6 @@ import kotlinx.coroutines.launch
  * Madani mushaf reader: 604 swipeable pages (RTL: swipe left = next page), prev/next buttons and a surah picker.
  * [onStartRecitation] receives the page currently shown.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderScreen(
     page: Int,
@@ -70,10 +74,16 @@ fun ReaderScreen(
 
     Column(Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 8.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { showSurahs = true }) { Text(surahTitle?.let { "سورة $it" } ?: "السور") }
+            OutlinedButton(onClick = { showSurahs = true }) {
+                MenuIcon(MaterialTheme.colorScheme.primary, 18.dp)
+                Spacer(Modifier.width(6.dp))
+                Text(surahTitle?.let { "سورة $it" } ?: "الفهرس")
+            }
             Spacer(Modifier.weight(1f))
             Text("صفحة ${current.toArabicDigits()}", fontSize = 14.sp, color = Muted)
-            TextButton(onClick = onOpenSettings) { Text("الإعدادات") }
+            IconButton(onClick = onOpenSettings, modifier = Modifier.semantics { contentDescription = "الإعدادات" }) {
+                GearIcon(MaterialTheme.colorScheme.primary, 24.dp)
+            }
         }
         HorizontalPager(
             state = pager,
@@ -89,35 +99,40 @@ fun ReaderScreen(
                 fontSize = 11.sp, color = Muted, modifier = Modifier.padding(top = 4.dp),
             )
         }
-        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            // RTL: the first child is on the right = previous page, as in a printed mushaf.
-            OutlinedButton(onClick = { goTo(current - 1) }, enabled = current > 1) { Text("السابق") }
+        Row(
+            Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Button(onClick = { onStartRecitation(current) }, modifier = Modifier.weight(1f)) { Text("ابدأ التسميع") }
-            OutlinedButton(onClick = { goTo(current + 1) }, enabled = current < QuranConstants.PAGE_COUNT) { Text("التالي") }
+            // Arrows sit together on the physical LEFT; forced LTR so "<" (previous) is left of ">" (next).
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = { goTo(current - 1) }, enabled = current > 1,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة السابقة" },
+                    ) { Text("<", fontSize = 22.sp) }
+                    OutlinedButton(
+                        onClick = { goTo(current + 1) }, enabled = current < QuranConstants.PAGE_COUNT,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة التالية" },
+                    ) { Text(">", fontSize = 22.sp) }
+                }
+            }
         }
     }
 
     if (showSurahs) {
-        ModalBottomSheet(
-            onDismissRequest = { showSurahs = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        ) {
-            LazyColumn {
-                items(surahs, key = { it.number }) { s ->
-                    Row(
-                        Modifier.fillMaxWidth()
-                            .clickable { goTo(s.startPage); showSurahs = false }
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Text(s.number.toArabicDigits(), color = Muted, fontSize = 14.sp)
-                        Text(s.nameAr, fontFamily = HafsFont, fontSize = 22.sp)
-                        Spacer(Modifier.weight(1f))
-                        Text("${s.ayahCount.toArabicDigits()} آية · ص ${s.startPage.toArabicDigits()}", color = Muted, fontSize = 13.sp)
-                    }
-                }
-            }
-        }
+        QuranNavigationSheet(
+            surahs = surahs,
+            currentPage = current,
+            pageOfJuz = { juz ->
+                val (surah, ayah) = JuzStarts.FIRST_AYAH[juz - 1]
+                container.quranRepository.getPageForAyah(surah, ayah)
+            },
+            onGoToPage = { goTo(it) },
+            onDismiss = { showSurahs = false },
+        )
     }
 }

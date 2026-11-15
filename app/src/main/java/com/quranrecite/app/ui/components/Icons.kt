@@ -65,3 +65,25 @@ fun SlidersIcon(color: Color, size: Dp = 24.dp) = Canvas(Modifier.size(size)) {
     drawCircle(color, radius = 2 * k, center = Offset(16 * k, 7 * k), style = stroke(k))
     drawCircle(color, radius = 2 * k, center = Offset(8 * k, 17 * k), style = stroke(k))
 }
+
+/** Gear (settings) icon: 8 teeth around a ring with a hub circle. */
+@Composable
+fun GearIcon(color: Color, size: Dp = 24.dp) = Canvas(Modifier.size(size)) {
+    val k = this.size.width / 24f
+    val c = Offset(12 * k, 12 * k)
+    for (i in 0 until 8) {
+        val a = Math.toRadians(i * 45.0)
+        val dx = Math.cos(a).toFloat(); val dy = Math.sin(a).toFloat()
+        drawLine(color, Offset(c.x + dx * 7.5f * k, c.y + dy * 7.5f * k), Offset(c.x + dx * 10.5f * k, c.y + dy * 10.5f * k),
+            strokeWidth = 3f * k, cap = StrokeCap.Round)
+    }
+    drawCircle(color, radius = 6.5f * k, center = c, style = stroke(k))
+    drawCircle(color, radius = 2.5f * k, center = c, style = stroke(k))
+}
+
+/** Hamburger-style list icon for the navigation menu button. */
+@Composable
+fun MenuIcon(color: Color, size: Dp = 22.dp) = Canvas(Modifier.size(size)) {
+    val k = this.size.width / 24f
+    for (y in listOf(6f, 12f, 18f)) drawLine(color, Offset(4 * k, y * k), Offset(20 * k, y * k), strokeWidth = 2 * k, cap = StrokeCap.Round)
+}
