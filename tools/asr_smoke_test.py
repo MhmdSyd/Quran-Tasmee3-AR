@@ -73,7 +73,7 @@ def main():
         text = db.execute("select text from verses where surah=? and ayah=?", (int(s), int(ay))).fetchone()[0]
         ref = [f for f in (fold(w) for w in text.replace("\u00a0", " ").split(" ") if w != "۞") if f]
         t = time.time(); r = decode(x); dt = time.time() - t
-        hyp = [w for w in r.text.split("\u2581") if w]
+        hyp = r.text.replace("\u2581", " ").split()
         w_ = wer(ref, hyp); wers.append(w_)
         # timestamp sanity (40 ms grid) on real output
         ts = list(r.timestamps)
@@ -82,7 +82,7 @@ def main():
         # how do truncated decodes look (Partial behaviour)?
         parts = []
         for frac in (0.5, 0.75):
-            ph = [w for w in decode(x[: int(len(x) * frac)]).text.split("\u2581") if w]
+            ph = decode(x[: int(len(x) * frac)]).text.replace("\u2581", " ").split()
             n = 0
             while n < min(len(ph), len(hyp)) and ph[n] == hyp[n]: n += 1
             parts.append(f"{int(frac*100)}%:{n}/{len(ph)} prefix-words stable")
