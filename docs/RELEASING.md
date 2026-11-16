@@ -1,4 +1,22 @@
-# Publishing a release (v0.4.0 example)
+# Publishing a release
+
+## Automatic (default)
+The workflow `.github/workflows/android.yml` publishes the release for you:
+1. Set the version in `app/build.gradle.kts` (`versionName = "0.4.1"`, and raise `versionCode`).
+2. Write `docs/RELEASE_NOTES_v0.4.1.md` (optional; without it GitHub generates the notes).
+3. Push to `main`. When `data-checks`, `build` and the unit tests are green, the **github-release** job
+   creates the tag **`v<versionName>`** on that commit, creates the GitHub Release `تسميع — Quran Tasmee3 v0.4.1`,
+   pastes the notes and attaches **`Quran-Tasmee3-v0.4.1.apk`**.
+4. If the release for that version already exists the job does nothing, so later pushes do not duplicate it.
+   To publish again, bump `versionName`.
+You can also push a tag yourself (`git tag v0.4.1 && git push origin v0.4.1`); the same job then releases that tag.
+
+Requirement: **Settings -> Actions -> General -> Workflow permissions** must allow the workflow to run (the job asks for
+`contents: write` itself). The attached APK is debug-signed (see the notes at the end).
+
+---
+
+# Manual publishing (fallback)
 
 ## 0. Before you publish (5 minutes on a real phone)
 The release notes promise these things, so check them once on a device with the APK you are about to publish:

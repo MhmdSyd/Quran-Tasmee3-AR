@@ -115,3 +115,28 @@ fun EyeIcon(color: Color, size: Dp = 22.dp) = Canvas(Modifier.size(size)) {
     drawPath(p, color, style = stroke(k))
     drawCircle(color, radius = 3 * k, center = Offset(12 * k, 12 * k))
 }
+
+/** Bookmark ribbon; [filled] when an ayah is bookmarked. */
+@Composable
+fun BookmarkIcon(color: Color, filled: Boolean, size: Dp = 24.dp) = Canvas(Modifier.size(size)) {
+    val k = this.size.width / 24f
+    val p = Path().apply {
+        moveTo(6 * k, 3 * k); lineTo(18 * k, 3 * k); lineTo(18 * k, 21 * k)
+        lineTo(12 * k, 16.5f * k); lineTo(6 * k, 21 * k); close()
+    }
+    if (filled) drawPath(p, color) else drawPath(p, color, style = stroke(0.9f * k))
+}
+
+/**
+ * Open-book icon that tells which side of the Mushaf spread the page is on: odd pages are the RIGHT page
+ * (right half filled), even pages the LEFT page (left half filled).
+ */
+@Composable
+fun PageSideIcon(isRightPage: Boolean, color: Color, size: Dp = 20.dp) = Canvas(Modifier.size(size)) {
+    val k = this.size.width / 24f
+    val corner = CornerRadius(1.5f * k)
+    val left = Offset(2 * k, 5 * k); val right = Offset(13 * k, 5 * k); val page = Size(9 * k, 14 * k)
+    drawRoundRect(color, left, page, corner, style = stroke(0.8f * k))
+    drawRoundRect(color, right, page, corner, style = stroke(0.8f * k))
+    drawRoundRect(color, if (isRightPage) right else left, page, corner)
+}

@@ -56,6 +56,8 @@ fun LoadedMushafPage(
     wordStates: Map<Int, WordVisual> = emptyMap(),
     style: MushafStyle = MushafStyle.Default,
     onWordClick: ((QuranWord) -> Unit)? = null,
+    onWordLongClick: ((QuranWord) -> Unit)? = null,
+    highlightAyah: Pair<Int, Int>? = null,
 ) {
     val page by produceState<QuranPage?>(null, pageNumber, data) { value = data.page(pageNumber) }
     val basmallah by produceState(emptyList<String>(), data) { value = data.basmallah() }
@@ -63,7 +65,7 @@ fun LoadedMushafPage(
     val nameOf = remember(surahs) { { n: Int -> surahs.getOrNull(n - 1)?.nameAr ?: "" } }
     val p = page
     if (p != null && p.number == pageNumber) {
-        MushafPage(p, basmallah, nameOf, modifier, mode, wordStates, style, onWordClick)
+        MushafPage(p, basmallah, nameOf, modifier, mode, wordStates, style, onWordClick, onWordLongClick, highlightAyah)
     } else {
         Box(modifier)
     }
@@ -81,9 +83,11 @@ fun MushafPageFrame(
     mode: MushafMode = MushafMode.Reading,
     wordStates: Map<Int, WordVisual> = emptyMap(),
     onWordClick: ((QuranWord) -> Unit)? = null,
+    onWordLongClick: ((QuranWord) -> Unit)? = null,
+    highlightAyah: Pair<Int, Int>? = null,
 ) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val w = minOf(maxWidth, maxHeight * MUSHAF_PAGE_ASPECT)
-        LoadedMushafPage(pageNumber, data, Modifier.width(w).fillMaxHeight(), mode, wordStates, onWordClick = onWordClick)
+        LoadedMushafPage(pageNumber, data, Modifier.width(w).fillMaxHeight(), mode, wordStates, onWordClick = onWordClick, onWordLongClick = onWordLongClick, highlightAyah = highlightAyah)
     }
 }

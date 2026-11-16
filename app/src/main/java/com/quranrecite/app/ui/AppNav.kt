@@ -38,7 +38,7 @@ fun AppNav(container: AppContainer) {
     NavHost(navController = nav, startDestination = Routes.WELCOME) {
         composable(Routes.WELCOME) {
             WelcomeScreen(onContinue = {
-                nav.navigate(Routes.reader(1)) { popUpTo(Routes.WELCOME) { inclusive = true } }
+                nav.navigate(Routes.reader(container.readingPosition.lastPage)) { popUpTo(Routes.WELCOME) { inclusive = true } }
             })
         }
         composable(Routes.READER, pageArg) { entry ->

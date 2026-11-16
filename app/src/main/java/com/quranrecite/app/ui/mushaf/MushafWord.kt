@@ -1,6 +1,7 @@
 package com.quranrecite.app.ui.mushaf
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +27,7 @@ private const val HIDDEN_DESCRIPTION = "كلمة مخفية"
  * One word. All states lay out with the word's real text width (hidden text is transparent, not removed),
  * so state changes never move anything. Verse-number markers ignore [visual] and are always visible.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun MushafWord(
     text: String,
@@ -35,6 +37,7 @@ internal fun MushafWord(
     fontPx: Float,
     style: MushafStyle,
     onClick: (() -> Unit)?,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val v = if (isMarker) WordVisual.Normal else visual
     val color = when {
@@ -50,7 +53,9 @@ internal fun MushafWord(
     var baseline by remember { mutableFloatStateOf(Float.NaN) }
     val hidden = v == WordVisual.Hidden || v == WordVisual.Mistake || v == WordVisual.Expected || v == WordVisual.Skipped
     var modifier = Modifier.drawBehind { drawDecoration(v, baseline, fontPx, style) }
-    if (onClick != null) modifier = modifier.clickable(onClick = onClick)
+    if (onClick != null || onLongClick != null) {
+        modifier = modifier.combinedClickable(onClick = onClick ?: {}, onLongClick = onLongClick)
+    }
     if (hidden) modifier = modifier.clearAndSetSemantics { contentDescription = HIDDEN_DESCRIPTION }
     Text(
         text = text,

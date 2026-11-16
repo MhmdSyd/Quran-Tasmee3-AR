@@ -56,6 +56,9 @@ fun MushafPage(
     wordStates: Map<Int, WordVisual> = emptyMap(),
     style: MushafStyle = MushafStyle.Default,
     onWordClick: ((QuranWord) -> Unit)? = null,
+    onWordLongClick: ((QuranWord) -> Unit)? = null,
+    /** (surah, ayah) to mark with the "current" chip, e.g. the ayah just reached from a bookmark. */
+    highlightAyah: Pair<Int, Int>? = null,
 ) {
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer()
@@ -87,7 +90,11 @@ fun MushafPage(
                         }
                         is PageLine.Ayahs -> {
                             val defaultVisual = if (mode == MushafMode.Reading) WordVisual.Normal else WordVisual.Hidden
-                            val visuals = line.words.map { wordStates[it.id] ?: defaultVisual }
+                            val visuals = line.words.map {
+                                wordStates[it.id]
+                                    ?: if (highlightAyah != null && !it.isAyahMarker && it.surah == highlightAyah.first && it.ayah == highlightAyah.second) WordVisual.Current
+                                    else defaultVisual
+                            }
                             val kinds = line.words.mapIndexed { i, w -> if (w.isAyahMarker) WordLine.None else visuals[i].lineKind() }
                             JustifiedLine(
                                 line.isCentered, naturalGapPx, Modifier.fillMaxSize(),
@@ -98,6 +105,7 @@ fun MushafPage(
                                 MushafWord(
                                     w.text, w.isAyahMarker, visual, fontSp, metrics.fontPx, style,
                                     onWordClick?.let { cb -> { cb(w) } },
+                                    onWordLongClick?.let { cb -> { cb(w) } },
                                 )
                             } }
                             }

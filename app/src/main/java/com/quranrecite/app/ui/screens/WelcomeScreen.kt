@@ -23,14 +23,14 @@ import com.quranrecite.app.R
 import kotlinx.coroutines.delay
 
 /**
- * Welcome page: plain white background with the Basmala image, shown for ~2.2 s (tap to skip), then the reader opens.
+ * Welcome page: plain white background with the Basmala image, shown for 0.5 s (tap to skip), then the reader opens.
  * The image is a black-ink PNG with transparent background (res/drawable-nodpi/bismillah.png).
  */
 @Composable
 fun WelcomeScreen(onContinue: () -> Unit) {
     val done by rememberUpdatedState(onContinue)
     LaunchedEffect(Unit) {
-        delay(1000)
+        delay(500)
         done()
     }
     Box(

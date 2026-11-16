@@ -12,7 +12,11 @@ import com.quranrecite.app.recitation.RecitationMatcher
 import com.quranrecite.app.session.ActiveTimer
 import com.quranrecite.app.session.InMemorySessionStore
 import com.quranrecite.app.session.SessionStore
+import com.quranrecite.app.settings.BookmarkStore
+import com.quranrecite.app.settings.PrefsBookmarkStore
+import com.quranrecite.app.settings.PrefsReadingPosition
 import com.quranrecite.app.settings.PrefsSettingsRepository
+import com.quranrecite.app.settings.ReadingPosition
 import com.quranrecite.app.settings.SettingsRepository
 import com.quranrecite.app.speech.asr.SherpaSpeechEngine
 import com.quranrecite.app.speech.SpeechEngine
@@ -34,6 +38,8 @@ class AppContainer(context: Context) {
     val asrEngine = SherpaSpeechEngine(context.applicationContext)
     val speechEngine: SpeechEngine = asrEngine
     val settingsRepository: SettingsRepository = PrefsSettingsRepository(context.applicationContext)
+    val readingPosition: ReadingPosition = PrefsReadingPosition(context.applicationContext)
+    val bookmarkStore: BookmarkStore = PrefsBookmarkStore(context.applicationContext)
     /** Agent 5: word matching + position tracking. Strictness is read from the settings on every event. */
     val recitationMatcher: RecitationMatcher = TrackingRecitationMatcher { settingsRepository.settings.value.strictness }
     /** Survives screen changes; used to stop the microphone when the recitation screen is left. */

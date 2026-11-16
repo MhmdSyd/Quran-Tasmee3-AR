@@ -68,6 +68,7 @@ import com.quranrecite.app.ui.components.BulbIcon
 import com.quranrecite.app.ui.components.MicIcon
 import com.quranrecite.app.ui.components.GearIcon
 import com.quranrecite.app.ui.components.EyeIcon
+import com.quranrecite.app.ui.components.PageSideIcon
 import com.quranrecite.app.ui.components.PauseIcon
 import com.quranrecite.app.ui.components.PlayIcon
 import com.quranrecite.app.ui.mushaf.MushafMode
@@ -129,6 +130,7 @@ fun RecitationScreen(
     // so the microphone and the session keep running.
     var curPage by remember(page) { mutableStateOf(if (resumed) session.currentPage else page) }
     var switching by remember { mutableStateOf(false) }
+    LaunchedEffect(curPage) { container.readingPosition.lastPage = curPage }
     // True while progress.finished was caused by "show ayah" (the page's last ayah was shown): that must not end the session.
     var finishedByShow by remember { mutableStateOf(false) }
 
@@ -254,7 +256,14 @@ fun RecitationScreen(
         Row(Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButtonBox("رجوع إلى المصحف", onClick = { container.endSession(); onBack() }) { BackIcon(Ink) }
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("تسميع الصفحة ${curPage.toArabicDigits()}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Ink)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("تسميع الصفحة ${curPage.toArabicDigits()}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Ink)
+                    Spacer(Modifier.width(6.dp))
+                    val rightPage = curPage % 2 == 1   // odd = right-hand page of the Mushaf, even = left-hand page
+                    Box(Modifier.semantics { contentDescription = if (rightPage) "الصفحة اليمنى من المصحف" else "الصفحة اليسرى من المصحف" }) {
+                        PageSideIcon(rightPage, Ink, 18.dp)
+                    }
+                }
                 Text(
                     "${SummaryText.digits(progress.passedWords)} من ${SummaryText.digits(progress.totalWords)} كلمة",
                     fontSize = 11.sp, color = Muted,
@@ -296,12 +305,12 @@ fun RecitationScreen(
                         onClick = { onArrow(curPage + 1) }, enabled = !finishing && !switching && curPage < QuranConstants.PAGE_COUNT,
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة التالية" },
-                    ) { Text("<", fontSize = 22.sp) }
+                    ) { Text("←", fontSize = 22.sp) }
                     OutlinedButton(
                         onClick = { onArrow(curPage - 1) }, enabled = !finishing && !switching && curPage > 1,
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة السابقة" },
-                    ) { Text(">", fontSize = 22.sp) }
+                    ) { Text("→", fontSize = 22.sp) }
                 }
                 Spacer(Modifier.weight(1f))
                 ControlPill("تلميح", enabled = !finishing && !progress.finished, onClick = { matcher.hint() })

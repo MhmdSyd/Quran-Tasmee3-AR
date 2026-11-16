@@ -34,8 +34,9 @@ This repository contains the complete Android project and the GitHub Actions wor
 ## Features
 **Mushaf reader**
 - Full Madani Mushaf (Hafs, King Fahd Complex print): **604 pages × 15 lines**, exact page and line layout, KFGQPC Uthmanic Hafs font.
+- **Bookmark:** long-press any ayah to **copy it** or **save it as the bookmark** (one bookmark; a new one replaces the old). The bookmark icon next to the gear jumps back to that ayah and highlights it.
 - Surah headings in the decorative frame, with surah names drawn in a dedicated surah-name font.
-- **Navigation button** with three tabs: **Surahs** (all 114, with page numbers), **Page** (1–604, Arabic or western digits) and **Juz** (1–30). Swipe or use the `<` `>` buttons to turn pages.
+- **Navigation button** with three tabs: **Surahs** (all 114, with page numbers), **Page** (1–604, Arabic or western digits) and **Juz** (1–30). Swipe or use the `←` `→` buttons to turn pages. The app reopens on the last page you were on.
 
 **Recitation mode**
 - Page words are hidden and replaced by a thin, continuous gray underline that follows the real position and width of the unrevealed words; revealed words appear in place with full diacritics and **nothing moves or reflows**.
@@ -44,10 +45,11 @@ This repository contains the complete Android project and the GitHub Actions wor
 - **تلميح (Hint)** reveals the next word.
 - **إظهار الآية (Show ayah)** reveals the current ayah; each further press reveals the next ayah, moving on to the next page automatically when needed, without stopping the session.
 - Tap any word to start from there or to reveal just that word.
-- `<` `>` move to the previous/next page without leaving recitation. The Quran page keeps the same size and position as in the reader.
+- `←` `→` move to the next/previous page without leaving recitation. The Quran page keeps the same size and position as in the reader.
 - Session summary: progress and a list of words **للمراجعة** (for review).
 
 **Other**
+- Open-book icon next to the page number shows the side of the Mushaf spread: odd pages are the right page, even pages the left page.
 - Welcome page with the Basmala, white background like a printed Mushaf, Arabic right-to-left interface.
 - Settings: recitation strictness (lenient / normal / strict), show review marks immediately, ASR diagnostics.
 
@@ -76,7 +78,7 @@ This repository contains the complete Android project and the GitHub Actions wor
    (it contains `Quran-Tasmee3-debug.apk`, roughly 100 MB because it bundles the 36 MB model and native libraries for 3 ABIs).
 3. Unzip it and install the APK.
 
-Publishing a release: see [`docs/RELEASING.md`](docs/RELEASING.md).
+**Releases are automatic:** pushing a new `versionName` to `main` builds the app, tags `v<versionName>` and publishes a GitHub Release with the APK attached; see [`docs/RELEASING.md`](docs/RELEASING.md).
 
 ### Optional signed release APK
 Add these repository secrets (Settings → Secrets and variables → Actions): `RELEASE_KEYSTORE_BASE64`
