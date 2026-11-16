@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -139,4 +140,22 @@ fun PageSideIcon(isRightPage: Boolean, color: Color, size: Dp = 20.dp) = Canvas(
     drawRoundRect(color, left, page, corner, style = stroke(0.8f * k))
     drawRoundRect(color, right, page, corner, style = stroke(0.8f * k))
     drawRoundRect(color, if (isRightPage) right else left, page, corner)
+}
+
+/**
+ * Page-turn arrow. Both directions come from the SAME right-pointing shape; the left one is that shape mirrored,
+ * so the two buttons can never differ in size or weight (unlike text arrows, which fall back to different fonts).
+ */
+@Composable
+fun ArrowIcon(pointsLeft: Boolean, color: Color, size: Dp = 26.dp) = Canvas(Modifier.size(size)) {
+    val k = this.size.width / 24f
+    val draw: DrawScope.() -> Unit = {
+        val st = Stroke(width = 2.2f * k, cap = StrokeCap.Round, join = StrokeJoin.Round)
+        val p = Path().apply {
+            moveTo(4 * k, 12 * k); lineTo(20 * k, 12 * k)          // shaft
+            moveTo(14 * k, 6 * k); lineTo(20 * k, 12 * k); lineTo(14 * k, 18 * k)   // head
+        }
+        drawPath(p, color, style = st)
+    }
+    if (pointsLeft) scale(scaleX = -1f, scaleY = 1f, pivot = center) { draw() } else draw()
 }

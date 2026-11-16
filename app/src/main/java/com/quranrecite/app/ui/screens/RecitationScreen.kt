@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -67,6 +68,7 @@ import com.quranrecite.app.ui.components.BackIcon
 import com.quranrecite.app.ui.components.BulbIcon
 import com.quranrecite.app.ui.components.MicIcon
 import com.quranrecite.app.ui.components.GearIcon
+import com.quranrecite.app.ui.components.ArrowIcon
 import com.quranrecite.app.ui.components.EyeIcon
 import com.quranrecite.app.ui.components.PageSideIcon
 import com.quranrecite.app.ui.components.PauseIcon
@@ -108,7 +110,6 @@ fun RecitationScreen(
     val scope = rememberCoroutineScope()
     val matcher = container.recitationMatcher
     val engine = container.speechEngine
-    val progress by matcher.progress.collectAsState()
     val engineState by engine.state.collectAsState()
     val settings by container.settingsRepository.settings.collectAsState()
 
@@ -118,7 +119,12 @@ fun RecitationScreen(
         val p = matcher.progress.value
         s != null && s.page == page && p.pageNumber == s.currentPage && !p.finished
     }
-    val session = remember(page) { if (resumed) container.activeSession!! else container.beginSession(page) }
+    // A fresh screen must not see the previous page's matcher state (finished = true would end the new session at once,
+    // with an empty summary), so the matcher is reset synchronously, BEFORE progress is first read.
+    val session = remember(page) {
+        if (resumed) container.activeSession!! else { matcher.reset(); container.beginSession(page) }
+    }
+    val progress by matcher.progress.collectAsState()
     val startedAt = session.startedAt
     val timer = session.timer
     var error by remember { mutableStateOf<SpeechEvent.Error?>(null) }
@@ -221,7 +227,8 @@ fun RecitationScreen(
         }
     }
     LaunchedEffect(progress.finished) {
-        if (!progress.finished) finishedByShow = false else if (!finishedByShow) finish()
+        if (!progress.finished) finishedByShow = false
+        else if (!finishedByShow && progress.pageNumber == curPage && progress.totalWords > 0) finish()
     }
 
     // Moves the screen (and the matcher) to [target], keeping the audio session and its bookkeeping. Progress of the page
@@ -305,12 +312,12 @@ fun RecitationScreen(
                         onClick = { onArrow(curPage + 1) }, enabled = !finishing && !switching && curPage < QuranConstants.PAGE_COUNT,
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة التالية" },
-                    ) { Text("←", fontSize = 22.sp) }
+                    ) { ArrowIcon(pointsLeft = true, color = LocalContentColor.current) }
                     OutlinedButton(
                         onClick = { onArrow(curPage - 1) }, enabled = !finishing && !switching && curPage > 1,
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة السابقة" },
-                    ) { Text("→", fontSize = 22.sp) }
+                    ) { ArrowIcon(pointsLeft = false, color = LocalContentColor.current) }
                 }
                 Spacer(Modifier.weight(1f))
                 ControlPill("تلميح", enabled = !finishing && !progress.finished, onClick = { matcher.hint() })

@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import com.quranrecite.app.settings.Bookmark
+import com.quranrecite.app.ui.components.ArrowIcon
 import com.quranrecite.app.ui.components.BookmarkIcon
 import com.quranrecite.app.ui.components.PageSideIcon
 import kotlinx.coroutines.delay
@@ -164,12 +165,12 @@ fun ReaderScreen(
                         onClick = { goTo(current + 1) }, enabled = current < QuranConstants.PAGE_COUNT,
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة التالية" },
-                    ) { Text("←", fontSize = 22.sp) }
+                    ) { ArrowIcon(pointsLeft = true, color = LocalContentColor.current) }
                     OutlinedButton(
                         onClick = { goTo(current - 1) }, enabled = current > 1,
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier.size(48.dp).semantics { contentDescription = "الصفحة السابقة" },
-                    ) { Text("→", fontSize = 22.sp) }
+                    ) { ArrowIcon(pointsLeft = false, color = LocalContentColor.current) }
                 }
             }
         }

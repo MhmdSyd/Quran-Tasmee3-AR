@@ -102,3 +102,16 @@ class ShowAyahTest {
         assertEquals(ShowAyahResult.Shown, h.tracker.showAyah())
     }
 }
+
+class ResetAfterFinishTest {
+    @Test fun resetClearsFinishedSoTheNextPageDoesNotEndImmediately() {
+        val h = Harness(3)
+        while (h.tracker.showAyah() == ShowAyahResult.Shown) Unit
+        assertTrue(h.tracker.progress().finished)
+        h.tracker.reset()
+        val p = h.tracker.progress()
+        assertFalse(p.finished)
+        assertEquals(0, p.totalWords)
+        assertEquals(0, p.pageNumber)
+    }
+}
