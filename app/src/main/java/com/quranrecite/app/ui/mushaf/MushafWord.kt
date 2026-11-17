@@ -18,6 +18,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 
@@ -27,6 +31,9 @@ private const val HIDDEN_DESCRIPTION = "كلمة مخفية"
  * One word. All states lay out with the word's real text width (hidden text is transparent, not removed),
  * so state changes never move anything. Verse-number markers ignore [visual] and are always visible.
  */
+/** ۞ (U+06DE) */
+internal const val HIZB_SIGN = "\u06DE"
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun MushafWord(
@@ -38,6 +45,8 @@ internal fun MushafWord(
     style: MushafStyle,
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)? = null,
+    /** Draw the Hizb-quarter sign (۞) before the word; it stays visible even while the word is hidden. */
+    hizbMark: Boolean = false,
 ) {
     val v = if (isMarker) WordVisual.Normal else visual
     val color = when {
@@ -57,8 +66,13 @@ internal fun MushafWord(
         modifier = modifier.combinedClickable(onClick = onClick ?: {}, onLongClick = onLongClick)
     }
     if (hidden) modifier = modifier.clearAndSetSemantics { contentDescription = HIDDEN_DESCRIPTION }
+    val shown = if (hizbMark) buildAnnotatedString {
+        withStyle(SpanStyle(color = style.verseNumber)) { append(HIZB_SIGN) }
+        append('\u00A0')
+        append(text)
+    } else AnnotatedString(text)
     Text(
-        text = text,
+        text = shown,
         style = style.textStyle(fontSp, color),
         maxLines = 1,
         softWrap = false,

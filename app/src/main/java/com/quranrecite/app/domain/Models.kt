@@ -22,6 +22,11 @@ data class QuranWord(
      * 15-line DB numbers one Hafs token as two words; the word then covers id..idEnd and belongs to the line of [id].
      */
     val idEnd: Int = id,
+    /**
+     * The Hizb-quarter sign (۞) stands in front of this word in the canonical verse text. It is not a word and has no id
+     * (so word ids still match the 15-line layout database); it is only drawn before the word. [text] is unchanged.
+     */
+    val hizbMark: Boolean = false,
 )
 
 /** One of the 15 lines of a mushaf page. */

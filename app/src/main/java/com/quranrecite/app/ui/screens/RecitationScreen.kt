@@ -234,7 +234,9 @@ fun RecitationScreen(
             matcher.continueOnPage(p, container.mushafData.basmallah())
             session.currentPage = target
             curPage = target
-            if (thenShowAyah) { finishedByShow = true; matcher.showAyah() }
+            if (thenShowAyah) matcher.showAyah()
+            // hold the automatic end/advance only if this page is ALREADY complete (shown to its end, or revisited)
+            finishedByShow = matcher.progress.value.finished
             switching = false
         }
     }
@@ -245,8 +247,11 @@ fun RecitationScreen(
     }
     fun onShowAyah() {
         if (finishing || switching) return
-        finishedByShow = true
-        if (matcher.showAyah() == ShowAyahResult.Shown) return
+        if (matcher.showAyah() == ShowAyahResult.Shown) {
+            // true only when showing this ayah completed the page; otherwise later recitation must finish/advance normally
+            finishedByShow = matcher.progress.value.finished
+            return
+        }
         val next = curPage + 1
         if (next > QuranConstants.PAGE_COUNT) { finishedByShow = false; finish(); return }   // end of the Quran
         switching = true

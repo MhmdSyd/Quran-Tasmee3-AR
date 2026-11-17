@@ -115,3 +115,43 @@ class ResetAfterFinishTest {
         assertEquals(0, p.pageNumber)
     }
 }
+
+class PageRevisitTest {
+    @Test fun contentStaysRevealedWhenComingBackInTheSameSession() {
+        val h = Harness(531)
+        h.tracker.showAyah(); h.tracker.showAyah()
+        val before = h.tracker.progress()
+        assertTrue(before.revealedCount > 0)
+        h.tracker.continueOnPage(TestPages.page(532), emptyList())
+        h.tracker.showAyah()
+        h.tracker.continueOnPage(TestPages.page(531), emptyList())
+        val back = h.tracker.progress()
+        assertEquals(before.revealedCount, back.revealedCount)
+        assertEquals(before.currentWordId, back.currentWordId)
+        assertFalse(back.finished)
+        h.tracker.continueOnPage(TestPages.page(532), emptyList())
+        assertTrue(h.tracker.progress().revealedCount > 0)       // page 532 kept its own progress too
+    }
+
+    @Test fun aCompletedPageStaysCompleted() {
+        val h = Harness(531)
+        while (h.tracker.showAyah() == ShowAyahResult.Shown) Unit
+        val full = h.tracker.progress().revealedCount
+        h.tracker.continueOnPage(TestPages.page(532), emptyList())
+        assertFalse(h.tracker.progress().finished)
+        h.tracker.continueOnPage(TestPages.page(531), emptyList())
+        assertTrue(h.tracker.progress().finished)
+        assertEquals(full, h.tracker.progress().revealedCount)
+    }
+
+    @Test fun aNewSessionStartsClean() {
+        val h = Harness(531)
+        h.tracker.showAyah()
+        h.tracker.continueOnPage(TestPages.page(532), emptyList())
+        h.tracker.reset()
+        h.tracker.begin(TestPages.page(531), null, emptyList())
+        assertEquals(0, h.tracker.progress().revealedCount)
+        h.tracker.continueOnPage(TestPages.page(532), emptyList())
+        assertEquals(0, h.tracker.progress().revealedCount)       // nothing remembered from the old session
+    }
+}

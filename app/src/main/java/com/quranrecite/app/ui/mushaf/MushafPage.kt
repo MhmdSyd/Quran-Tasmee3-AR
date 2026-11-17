@@ -106,6 +106,7 @@ fun MushafPage(
                                     w.text, w.isAyahMarker, visual, fontSp, metrics.fontPx, style,
                                     onWordClick?.let { cb -> { cb(w) } },
                                     onWordLongClick?.let { cb -> { cb(w) } },
+                                    hizbMark = w.hizbMark,
                                 )
                             } }
                             }
@@ -134,7 +135,7 @@ private fun computeMetrics(
     var widest = 0f
     for (line in page.lines) {
         when (line) {
-            is PageLine.Ayahs -> widest = max(widest, MushafFit.lineEm(line.words.map { em(it.text) }, line.isCentered))
+            is PageLine.Ayahs -> widest = max(widest, MushafFit.lineEm(line.words.map { em(if (it.hizbMark) HIZB_SIGN + "\u00A0" + it.text else it.text) }, line.isCentered))
             is PageLine.Basmallah -> widest = max(widest, MushafFit.lineEm(basmallah.map { em(it) }, true))
             is PageLine.SurahHeader -> Unit
         }

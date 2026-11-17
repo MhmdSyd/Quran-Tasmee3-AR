@@ -37,4 +37,22 @@ class WordMapperTest {
         assertEquals("ٱللَّهِ ٱلرَّحۡمَٰنِ", w[1].text)
         assertEquals(listOf(1, 2, 3, 4), w.map { it.id })
     }
+
+    @Test fun hizbSignIsKeptOnTheFollowingWordWithoutChangingIdsOrText() {
+        val w = WordMapper.buildWords(2, 26, 100, "۞\u00A0إِنَّ ٱللَّهَ ٢٦", null)
+        assertEquals(listOf(100, 101, 102), w.map { it.id })                 // ids as if the sign did not exist
+        assertEquals(listOf("إِنَّ", "ٱللَّهَ", "٢٦"), w.map { it.text })      // canonical word text untouched
+        assertEquals(listOf(true, false, false), w.map { it.hizbMark })
+    }
+
+    @Test fun versesWithoutTheSignHaveNoMarks() {
+        assertTrue(WordMapper.buildWords(1, 1, 1, fatiha1, null).none { it.hizbMark })
+    }
+
+    @Test fun signStaysOnTheRightWordWithSplitAndMerge() {
+        val t = "۞ بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ١"
+        assertTrue(WordMapper.buildWords(1, 1, 1, t, Adjustment(Kind.MERGE, 1)).first().hizbMark)
+        assertTrue(WordMapper.buildWords(1, 1, 1, t, Adjustment(Kind.SPLIT, 1)).first().hizbMark)
+        assertEquals(1, WordMapper.buildWords(1, 1, 1, t, Adjustment(Kind.SPLIT, 1)).count { it.hizbMark })
+    }
 }

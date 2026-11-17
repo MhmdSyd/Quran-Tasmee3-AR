@@ -55,6 +55,14 @@ class RecitationTracker(private val strictness: () -> Strictness = { Strictness.
 
     private val n get() = words.size
 
+    /** Progress of pages left during this session (arrows, show ayah, continuous recitation), restored when coming back. */
+    private class PageSnapshot(
+        val state: Array<WordState>, val reason: Array<ReviewReason?>, val resolvedSeg: IntArray,
+        val scopeStart: Int, val cursor: Int, val finished: Boolean, val lastRecognized: Int,
+        val segBase: Int, val segPreamble: Boolean, val repetitions: Int, val retries: Int,
+    )
+    private val savedPages = HashMap<Int, PageSnapshot>()
+
     private companion object {
         /** At the very start, a jump over this many words means "the reciter started elsewhere", not "skipped". */
         const val RELOCATE_DISTANCE = 5
@@ -99,6 +107,7 @@ class RecitationTracker(private val strictness: () -> Strictness = { Strictness.
         curSeg = Int.MIN_VALUE; segBase = 0; segPreamble = false
         lastFinalSeg = Int.MIN_VALUE; lastFinalEndMs = 0; dropBeforeMs = 0; lastAudioEndMs = 0; sawListening = false
         feedback = RecitationFeedback.None; feedbackSeq = 0; repetitions = 0; retries = 0
+        savedPages.clear()
     }
 
     // ------------------------------------------------------------------------------------------------ speech input
@@ -421,7 +430,22 @@ class RecitationTracker(private val strictness: () -> Strictness = { Strictness.
     fun continueOnPage(page: QuranPage, basmallah: List<String>) {
         val seg = curSeg; val finalSeg = lastFinalSeg; val finalEnd = lastFinalEndMs
         val drop = dropBeforeMs; val audioEnd = lastAudioEndMs
+        // remember the page we leave (all pages left in this session), then start the new one
+        if (pageNumber > 0 && n > 0) {
+            savedPages[pageNumber] = PageSnapshot(
+                state.copyOf(), reason.copyOf(), resolvedSeg.copyOf(), scopeStart, cursor, finished, lastRecognized,
+                segBase, segPreamble, repetitions, retries,
+            )
+        }
+        val keep = HashMap(savedPages)
         begin(page, null, basmallah)
+        savedPages.putAll(keep)
+        // coming back to a page already recited in this session: its content stays revealed
+        savedPages[page.number]?.takeIf { it.state.size == n }?.let { s ->
+            for (k in 0 until n) { state[k] = s.state[k]; reason[k] = s.reason[k]; resolvedSeg[k] = s.resolvedSeg[k] }
+            scopeStart = s.scopeStart; cursor = s.cursor; finished = s.finished; lastRecognized = s.lastRecognized
+            segBase = s.segBase; segPreamble = s.segPreamble; repetitions = s.repetitions; retries = s.retries
+        }
         curSeg = seg; lastFinalSeg = finalSeg; lastFinalEndMs = finalEnd
         lastAudioEndMs = audioEnd; dropBeforeMs = maxOf(drop, audioEnd)
     }

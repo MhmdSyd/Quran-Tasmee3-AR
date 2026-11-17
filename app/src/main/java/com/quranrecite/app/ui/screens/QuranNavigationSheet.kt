@@ -74,12 +74,12 @@ fun QuranNavigationSheet(
                 items(surahs, key = { it.number }) { s ->
                     Row(
                         Modifier.fillMaxWidth().clickable { onGoToPage(s.startPage); onDismiss() }
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                            .padding(horizontal = 20.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Text(s.number.toArabicDigits(), color = Muted, fontSize = 14.sp)
-                        SurahNameText(s.number, s.nameAr, 24.sp, LocalContentColor.current)
+                        SurahNameText(s.number, s.nameAr, 34.sp, LocalContentColor.current)
                         Spacer(Modifier.weight(1f))
                         Text("${s.ayahCount.toArabicDigits()} آية · ص ${s.startPage.toArabicDigits()}", color = Muted, fontSize = 13.sp)
                     }
