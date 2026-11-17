@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +48,20 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenAsrDiagnos
             Switch(
                 checked = s.showMistakeImmediately,
                 onCheckedChange = { v -> repo.update { it.copy(showMistakeImmediately = v) } },
+            )
+        }
+
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("تسميع مستمر")
+                Text(
+                    "عند إكمال الصفحة ينتقل التطبيق تلقائيًا إلى الصفحة التالية ويستمر التسميع دون عرض النتائج. عند الإيقاف تظهر النتائج بعد كل صفحة.",
+                    fontSize = 12.sp, color = Muted,
+                )
+            }
+            Switch(
+                checked = s.continuousRecitation,
+                onCheckedChange = { v -> repo.update { it.copy(continuousRecitation = v) } },
             )
         }
 

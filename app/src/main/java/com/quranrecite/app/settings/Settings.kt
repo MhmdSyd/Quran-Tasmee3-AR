@@ -9,6 +9,8 @@ data class RecitationSettings(
     val strictness: Strictness = Strictness.Normal,
     val fontScale: Float = 1f,
     val showMistakeImmediately: Boolean = true,
+    /** تسميع مستمر: when a page is completed, go on to the next page and keep reciting instead of showing the results. */
+    val continuousRecitation: Boolean = false,
 )
 
 interface SettingsRepository {
@@ -29,6 +31,7 @@ class PrefsSettingsRepository(context: Context) : SettingsRepository {
             .putString("strictness", next.strictness.name)
             .putFloat("fontScale", next.fontScale)
             .putBoolean("showMistakeImmediately", next.showMistakeImmediately)
+            .putBoolean("continuousRecitation", next.continuousRecitation)
             .apply()
     }
 
@@ -39,6 +42,7 @@ class PrefsSettingsRepository(context: Context) : SettingsRepository {
                 .getOrDefault(d.strictness),
             fontScale = prefs.getFloat("fontScale", d.fontScale),
             showMistakeImmediately = prefs.getBoolean("showMistakeImmediately", d.showMistakeImmediately),
+            continuousRecitation = prefs.getBoolean("continuousRecitation", d.continuousRecitation),
         )
     }
 }

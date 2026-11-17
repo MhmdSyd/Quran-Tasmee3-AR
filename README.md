@@ -34,6 +34,7 @@ This repository contains the complete Android project and the GitHub Actions wor
 ## Features
 **Mushaf reader**
 - Full Madani Mushaf (Hafs, King Fahd Complex print): **604 pages × 15 lines**, exact page and line layout, KFGQPC Uthmanic Hafs font.
+- **تسميع مستمر (Continuous recitation)**, a switch in Settings: on = finishing a page moves to the next page and recitation goes on without the results screen; off = results after every page.
 - **Bookmark:** long-press any ayah to **copy it** or **save it as the bookmark** (one bookmark; a new one replaces the old). The bookmark icon next to the gear jumps back to that ayah and highlights it.
 - Surah headings in the decorative frame, with surah names drawn in a dedicated surah-name font.
 - **Navigation button** with three tabs: **Surahs** (all 114, with page numbers), **Page** (1–604, Arabic or western digits) and **Juz** (1–30). Swipe or use the arrow buttons to turn pages. The app reopens on the last page you were on.

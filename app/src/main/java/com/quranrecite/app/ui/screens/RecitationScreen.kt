@@ -226,11 +226,6 @@ fun RecitationScreen(
             onFinish(matcher.report().toSummary(startedAt, timer.elapsedMillis()))
         }
     }
-    LaunchedEffect(progress.finished) {
-        if (!progress.finished) finishedByShow = false
-        else if (!finishedByShow && progress.pageNumber == curPage && progress.totalWords > 0) finish()
-    }
-
     // Moves the screen (and the matcher) to [target], keeping the audio session and its bookkeeping. Progress of the page
     // that is left is not carried over: the matcher follows one page at a time.
     fun moveToPage(target: Int, thenShowAyah: Boolean) {
@@ -256,6 +251,21 @@ fun RecitationScreen(
         if (next > QuranConstants.PAGE_COUNT) { finishedByShow = false; finish(); return }   // end of the Quran
         switching = true
         moveToPage(next, thenShowAyah = true)
+    }
+
+    // Page completed by reciting. "تسميع مستمر" on: carry on with the next page (microphone and session keep running, no
+    // results screen). Off, or at the end of the Quran: finish and show the results as before.
+    LaunchedEffect(progress.finished) {
+        if (!progress.finished) {
+            finishedByShow = false
+        } else if (!finishedByShow && progress.pageNumber == curPage && progress.totalWords > 0) {
+            if (container.settingsRepository.settings.value.continuousRecitation &&
+                curPage < QuranConstants.PAGE_COUNT && !switching && !finishing
+            ) {
+                switching = true
+                moveToPage(curPage + 1, thenShowAyah = false)
+            } else finish()
+        }
     }
 
     Column(Modifier.fillMaxSize().background(ScreenBg).systemBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
