@@ -50,6 +50,7 @@ This repository contains the complete Android project and the GitHub Actions wor
 - Session summary: progress and a list of words **للمراجعة** (for review).
 
 **Other**
+- **Hizb indicator** under the page number: `حزب N` plus a drawn pie for ¼ / ½ / ¾ of the hizb or the start of a hizb, from the complete 240-quarter data in `qpc-hafs.db` (`python3 tools/validate_hizb_quarters.py` checks it).
 - Open-book icon next to the page number shows the side of the Mushaf spread: odd pages are the right page, even pages the left page.
 - Welcome page with the Basmala, white background like a printed Mushaf, Arabic right-to-left interface.
 - Settings: recitation strictness (lenient / normal / strict), show review marks immediately, ASR diagnostics.

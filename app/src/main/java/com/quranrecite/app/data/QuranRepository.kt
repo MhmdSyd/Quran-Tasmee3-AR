@@ -40,6 +40,9 @@ interface QuranRepository {
 
     /** Known data limitations (empty list == fully verified mapping). */
     suspend fun getDataIssues(): DataIssues
+
+    /** The 240 hizb-quarter starts (surah, ayah) from the hizb_quarters table of qpc-hafs.db; empty if the table is missing. */
+    suspend fun getHizbQuarterStarts(): List<Pair<Int, Int>> = emptyList()
 }
 
 /** Placeholder for previews/tests. The app uses [SqliteQuranRepository]. */

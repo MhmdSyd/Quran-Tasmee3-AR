@@ -140,6 +140,19 @@ class SqliteQuranRepository(context: Context) : QuranRepository {
         verseOfWord(wordId)?.let { v -> wordsOf(v).firstOrNull { wordId in it.id..it.idEnd } }
     }
 
+    override suspend fun getHizbQuarterStarts(): List<Pair<Int, Int>> = withContext(Dispatchers.IO) {
+        try {
+            hafs.rawQuery("SELECT start_verse_key FROM hizb_quarters ORDER BY rub_el_hizb", null).use { c ->
+                buildList {
+                    while (c.moveToNext()) {
+                        val (s, a) = c.getString(0).split(':')
+                        add(s.toInt() to a.toInt())
+                    }
+                }
+            }
+        } catch (e: android.database.SQLException) { emptyList() }   // older database without the table
+    }
+
     override suspend fun getDataIssues(): DataIssues = withContext(Dispatchers.IO) {
         index.rawQuery("SELECT DISTINCT page FROM word_adjustments WHERE verified = 0 ORDER BY page", null).use { c ->
             DataIssues(buildList { while (c.moveToNext()) add(c.getInt(0)) })

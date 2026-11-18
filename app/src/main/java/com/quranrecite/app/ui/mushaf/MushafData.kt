@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Box
 import com.quranrecite.app.data.QuranRepository
+import com.quranrecite.app.domain.HizbQuarters
 import com.quranrecite.app.domain.PageLine
 import com.quranrecite.app.domain.QuranPage
 import com.quranrecite.app.domain.QuranWord
@@ -35,8 +36,23 @@ class MushafDataSource(private val repo: QuranRepository, private val cacheSize:
 
     suspend fun surahs(): List<SurahInfo> = surahsCache ?: repo.getSurahs().also { surahsCache = it }
 
+    @Volatile private var hizbCache: HizbQuarters? = null
+    @Volatile private var hizbLoaded = false
+
+    /** The validated 240 quarter starts, or null while the data is missing/incomplete (then no hizb label is shown). */
+    suspend fun hizbQuarters(): HizbQuarters? {
+        if (!hizbLoaded) { hizbCache = HizbQuarters.from(repo.getHizbQuarterStarts()); hizbLoaded = true }
+        return hizbCache
+    }
+
     /** Pages whose line breaks may be off by one word (docs/handoffs/AGENT_2_HANDOFF.md). */
     suspend fun unverifiedPages(): Set<Int> = repo.getDataIssues().unverifiedPages.toSet()
+}
+
+/** (surah, ayah) of the first word on the page, or null. */
+fun QuranPage.firstAyahKey(): Pair<Int, Int>? {
+    for (l in lines) if (l is PageLine.Ayahs && l.words.isNotEmpty()) return l.words.first().let { it.surah to it.ayah }
+    return null
 }
 
 /** Surah that the page starts in (first ayah word, else first header). */

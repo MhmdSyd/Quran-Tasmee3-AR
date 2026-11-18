@@ -159,3 +159,19 @@ fun ArrowIcon(pointsLeft: Boolean, color: Color, size: Dp = 26.dp) = Canvas(Modi
     }
     if (pointsLeft) scale(scaleX = -1f, scaleY = 1f, pivot = center) { draw() } else draw()
 }
+
+/**
+ * Hizb progress pie: [part] 0 = ring with a filled centre (start of a hizb), 1 = a quarter filled, 2 = half, 3 = three quarters.
+ * Drawn, not font characters, so it looks the same on every phone.
+ */
+@Composable
+fun HizbPieIcon(part: Int, color: Color, size: Dp = 16.dp) = Canvas(Modifier.size(size)) {
+    val k = this.size.width / 24f
+    val ring = 10f * k
+    drawCircle(color, radius = ring, center = center, style = Stroke(width = 2f * k))
+    if (part <= 0) drawCircle(color, radius = 5.5f * k, center = center)
+    else drawArc(
+        color, startAngle = -90f, sweepAngle = 90f * part.coerceAtMost(3), useCenter = true,
+        topLeft = Offset(center.x - ring, center.y - ring), size = Size(ring * 2, ring * 2),
+    )
+}

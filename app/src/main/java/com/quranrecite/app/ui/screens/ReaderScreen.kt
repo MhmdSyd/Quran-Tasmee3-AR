@@ -55,7 +55,12 @@ import com.quranrecite.app.domain.QuranConstants
 import com.quranrecite.app.domain.QuranPage
 import com.quranrecite.app.domain.SurahInfo
 import com.quranrecite.app.ui.mushaf.MushafPageFrame
+import com.quranrecite.app.domain.HizbQuarters
+import com.quranrecite.app.domain.description
+import com.quranrecite.app.ui.components.HizbPieIcon
+import com.quranrecite.app.ui.mushaf.MushafStyle
 import com.quranrecite.app.ui.mushaf.SurahNameText
+import com.quranrecite.app.ui.mushaf.firstAyahKey
 import com.quranrecite.app.ui.mushaf.firstSurah
 import com.quranrecite.app.ui.mushaf.toArabicDigits
 import com.quranrecite.app.ui.theme.Muted
@@ -97,6 +102,7 @@ fun ReaderScreen(
         } ?: ""
     }
 
+    val hizbs by produceState<HizbQuarters?>(null, data) { value = data.hizbQuarters() }
     val titleSurah = currentPage?.firstSurah()
     val titleName = titleSurah?.let { surahs.getOrNull(it - 1)?.nameAr }
     fun goTo(p: Int) = scope.launch { pager.scrollToPage((p - 1).coerceIn(0, QuranConstants.PAGE_COUNT - 1)) }
@@ -110,12 +116,28 @@ fun ReaderScreen(
                 else Text("الفهرس")
             }
             Spacer(Modifier.weight(1f))
-            Text("صفحة ${current.toArabicDigits()}", fontSize = 14.sp, color = Muted)
-            // odd pages are the right-hand page of the Mushaf, even pages the left-hand page
-            val rightPage = current % 2 == 1
-            Spacer(Modifier.width(6.dp))
-            Box(Modifier.semantics { contentDescription = if (rightPage) "الصفحة اليمنى من المصحف" else "الصفحة اليسرى من المصحف" }) {
-                PageSideIcon(rightPage, MaterialTheme.colorScheme.primary, 20.dp)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("صفحة ${current.toArabicDigits()}", fontSize = 14.sp, color = Muted)
+                    // odd pages are the right-hand page of the Mushaf, even pages the left-hand page
+                    val rightPage = current % 2 == 1
+                    Spacer(Modifier.width(6.dp))
+                    Box(Modifier.semantics { contentDescription = if (rightPage) "الصفحة اليمنى من المصحف" else "الصفحة اليسرى من المصحف" }) {
+                        PageSideIcon(rightPage, MaterialTheme.colorScheme.primary, 20.dp)
+                    }
+                }
+                // hizb of the first ayah on the page; only shown when the 240-quarter data is complete and valid
+                val hizb = hizbs?.let { h -> currentPage?.firstAyahKey()?.let { (s, a) -> h.labelAt(s, a) } }
+                if (hizb != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.semantics { contentDescription = "الحزب ${hizb.hizb}، ${hizb.description()}" },
+                    ) {
+                        Text("حزب ${hizb.hizb.toArabicDigits()}", fontSize = 11.sp, color = MushafStyle.Default.verseNumber)
+                        Spacer(Modifier.width(4.dp))
+                        HizbPieIcon(hizb.part, MushafStyle.Default.verseNumber, 13.dp)
+                    }
+                }
             }
             IconButton(
                 onClick = {
