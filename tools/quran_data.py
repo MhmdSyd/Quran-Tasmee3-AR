@@ -22,6 +22,15 @@ SURAH_NAMES = _NAMES.split("|")
 def sha256(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest()
 
+def sha256_hafs_text(p):
+    """Hash of the canonical text only (id, surah, ayah, text). Extra columns/tables in qpc-hafs.db (e.g. the hizb data)
+    do not change it; any change to the Quran text does."""
+    import sqlite3
+    h = hashlib.sha256()
+    for vid, s, a, t in sqlite3.connect(p).execute("select id, surah, ayah, text from verses order by id"):
+        h.update(f"{vid}|{s}|{a}|{t}\n".encode("utf-8"))
+    return h.hexdigest()
+
 def tokenise(text):
     """Split canonical verse text into word tokens (ayah-number marker is the last token)."""
     out, cur = [], []

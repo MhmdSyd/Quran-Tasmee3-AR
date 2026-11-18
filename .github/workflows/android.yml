@@ -31,6 +31,7 @@ jobs:
           python-version: "3.12"
       - run: python3 tools/validate_quran_data.py
       - run: python3 tools/check_mushaf_structure.py
+      - run: python3 tools/validate_hizb_quarters.py
       - run: python3 tools/export_test_pages.py --check
       - name: Font and header image shipped byte-identical to the supplied files
         run: |

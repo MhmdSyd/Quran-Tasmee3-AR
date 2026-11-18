@@ -80,7 +80,7 @@ check("index: verse_index == rebuilt", sorted(X.execute("select verse_id,surah,a
 check("index: lines table == line DB (typed)", list(X.execute("select page,line,type,centered,first_word_id,last_word_id,surah from lines order by page,line"))
       == [(p, l, t, c, None if f == "" else f, None if e == "" else e, None if s == "" else s) for p, l, t, c, f, e, s in lines])
 check("index: surahs table (114 rows, names, ayah counts)", [r[:3] for r in X.execute("select surah,name_ar,ayah_count from surahs order by surah")] == [(i+1, q.SURAH_NAMES[i], q.AYAH_COUNTS[i]) for i in range(114)])
-check("index: source hashes match", dict(X.execute("select key,value from meta"))["hafs_sha256"] == q.sha256(q.HAFS) and dict(X.execute("select key,value from meta"))["lines_sha256"] == q.sha256(q.LINES))
+check("index: source hashes match (Quran text hash + line DB file hash)", dict(X.execute("select key,value from meta"))["hafs_text_sha256"] == q.sha256_hafs_text(q.HAFS) and dict(X.execute("select key,value from meta"))["lines_sha256"] == q.sha256(q.LINES))
 
 # ---- Canonical text preservation: every displayed word is a verbatim substring/join of the Hafs verse
 def canon_ok():

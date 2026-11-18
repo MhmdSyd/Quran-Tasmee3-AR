@@ -36,7 +36,7 @@ page_of_surah = {s: p for p,l,t,c,f,e,s in lines if t == "surah_name"}
 for s in range(1, 115):
     vs = [v for v in vidx if v[1] == s]
     db.execute("insert into surahs values(?,?,?,?,?,?)", (s, q.SURAH_NAMES[s-1], len(vs), page_of_surah[s], vs[0][4], vs[-1][4] + vs[-1][5] - 1))
-for k, v in {"schema_version": "1", "total_words": str(total), "hafs_sha256": q.sha256(q.HAFS), "lines_sha256": q.sha256(q.LINES),
+for k, v in {"schema_version": "1", "total_words": str(total), "hafs_text_sha256": q.sha256_hafs_text(q.HAFS), "lines_sha256": q.sha256(q.LINES),
              "mapping_fully_verified": str(int(all(a["verified"] for a in adjs)))}.items():
     db.execute("insert into meta values(?,?)", (k, v))
 db.commit(); db.execute("VACUUM"); db.close()
