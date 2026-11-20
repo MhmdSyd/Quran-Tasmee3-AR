@@ -91,7 +91,7 @@ import kotlinx.coroutines.yield
 
 private val ScreenBg = Color.White
 
-/** No speech for this long while listening -> the session pauses itself. */
+/** No new word detected for this long while listening -> the session pauses itself. */
 private const val IDLE_PAUSE_MS = 60_000L
 
 // Microphone toggle colours: idle = the existing start green, reciting = amber, paused = slate blue.
@@ -143,8 +143,6 @@ fun RecitationScreen(
     LaunchedEffect(curPage) { container.readingPosition.lastPage = curPage }
     // True while progress.finished was caused by "show ayah" (the page's last ayah was shown): that must not end the session.
     var finishedByShow by remember { mutableStateOf(false) }
-    // Idle auto-pause: bumped whenever speech is heard; if the microphone listens for IDLE_PAUSE_MS with no speech, pause it.
-    var heardSeq by remember { mutableStateOf(0) }
 
     // 1) page + basmala -> matcher
     LaunchedEffect(page) {
@@ -159,21 +157,22 @@ fun RecitationScreen(
             when (ev) {
                 is SpeechEvent.Listening -> { error = null; micDenied = false; timer.start() }
                 is SpeechEvent.Error -> error = ev
-                // any recognised speech counts as "heard something" and restarts the idle countdown
-                is SpeechEvent.Partial, is SpeechEvent.Final -> heardSeq++
                 else -> Unit
             }
             matcher.onSpeech(ev)
         }
     }
 
-    // 2b) auto-pause after one minute without hearing anything (restarts on Listening and on every Partial/Final)
-    LaunchedEffect(engineState, heardSeq) {
+    // 2b) auto-pause: if no NEW word is detected for IDLE_PAUSE_MS while listening, pause the microphone.
+    // Noise or unmatched sounds do not count; only real progress on the page (a word passed/revealed, or a page change) restarts the countdown.
+    // Pressing the mic button resumes (the effect restarts on Listening with a fresh countdown).
+    val progressKey = Triple(curPage, progress.passedWords, progress.revealedCount)
+    LaunchedEffect(engineState, progressKey) {
         if (engineState == EngineState.Listening) {
             delay(IDLE_PAUSE_MS)
             timer.pause()
-            engine.pause()
-            Toast.makeText(ctx, "تم إيقاف التسميع مؤقتًا لعدم سماع صوت لمدة دقيقة", Toast.LENGTH_LONG).show()
+            Toast.makeText(ctx, "تم إيقاف التسميع مؤقتًا: لم تُكتشف كلمة جديدة لمدة دقيقة. اضغط الزر للمتابعة", Toast.LENGTH_LONG).show()
+            scope.launch { engine.pause() }
         }
     }
 

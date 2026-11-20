@@ -42,7 +42,7 @@ This repository contains the complete Android project and the GitHub Actions wor
 **Recitation mode**
 - Page words are hidden and replaced by a thin, continuous gray underline that follows the real position and width of the unrevealed words; revealed words appear in place with full diacritics and **nothing moves or reflows**.
 - Live, on-device speech recognition reveals each word as you recite it, with partial skips and uncertain words marked for review.
-- **Auto-pause:** if the microphone hears no speech for **1 minute**, recitation pauses by itself; press the button to resume.
+- **Auto-pause:** if the microphone detects no new word for **1 minute**, recitation pauses by itself; press the button to resume.
 - **One microphone button** for start, pause and resume: green mic (ready), amber pause icon (recording), blue play icon (paused). Pausing really stops the microphone, and resuming continues from the same word.
 - **تلميح (Hint)** reveals the next word.
 - **إظهار الآية (Show ayah)** reveals the current ayah; each further press reveals the next ayah, moving on to the next page automatically when needed, without stopping the session.
