@@ -17,8 +17,8 @@ android {
         applicationId = "com.quranrecite.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 10
-        versionName = "0.4.6"
+        versionCode = 11
+        versionName = "0.4.7"
         // sherpa-onnx native libs (fetched by tools/fetch_asr_assets.sh into src/main/jniLibs)
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
     }

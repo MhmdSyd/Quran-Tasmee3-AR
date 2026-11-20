@@ -60,7 +60,7 @@ import com.quranrecite.app.domain.description
 import com.quranrecite.app.ui.components.HizbPieIcon
 import com.quranrecite.app.ui.mushaf.MushafStyle
 import com.quranrecite.app.ui.mushaf.SurahNameText
-import com.quranrecite.app.ui.mushaf.firstAyahKey
+import com.quranrecite.app.ui.mushaf.lastAyahKey
 import com.quranrecite.app.ui.mushaf.firstSurah
 import com.quranrecite.app.ui.mushaf.toArabicDigits
 import com.quranrecite.app.ui.theme.Muted
@@ -126,14 +126,15 @@ fun ReaderScreen(
                         PageSideIcon(rightPage, MaterialTheme.colorScheme.primary, 20.dp)
                     }
                 }
-                // hizb of the first ayah on the page; only shown when the 240-quarter data is complete and valid
-                val hizb = hizbs?.let { h -> currentPage?.firstAyahKey()?.let { (s, a) -> h.labelAt(s, a) } }
+                // hizb + juz of the LAST ayah on the page: when a new quarter starts inside the page (not on its first ayah)
+                // the label shows that new quarter. Only shown when the 240-quarter data is complete and valid.
+                val hizb = hizbs?.let { h -> currentPage?.lastAyahKey()?.let { (s, a) -> h.labelAt(s, a) } }
                 if (hizb != null) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.semantics { contentDescription = "الحزب ${hizb.hizb}، ${hizb.description()}" },
+                        modifier = Modifier.semantics { contentDescription = "الجزء ${hizb.juz}، الحزب ${hizb.hizb}، ${hizb.description()}" },
                     ) {
-                        Text("حزب ${hizb.hizb.toArabicDigits()}", fontSize = 11.sp, color = MushafStyle.Default.verseNumber)
+                        Text("جزء ${hizb.juz.toArabicDigits()} · حزب ${hizb.hizb.toArabicDigits()}", fontSize = 11.sp, color = MushafStyle.Default.verseNumber)
                         Spacer(Modifier.width(4.dp))
                         HizbPieIcon(hizb.part, MushafStyle.Default.verseNumber, 13.dp)
                     }

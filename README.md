@@ -21,15 +21,15 @@ packaged inside the APK. There is no account, no cloud, no analytics, and the ap
 This repository contains the complete Android project and the GitHub Actions workflow that builds the APK.
 
 ## Screenshots
-| Reading | Navigate (Surah / Page / Juz) | Recitation |
+| Reading | Navigate (Surah / Page / Juz) | Recitation (words hidden) |
 |:---:|:---:|:---:|
-| <img src="docs/screenshots/01-reader.jpg" width="230"/> | <img src="docs/screenshots/02-navigation.jpg" width="230"/> | <img src="docs/screenshots/03-recitation.jpg" width="230"/> |
-| Standard 15-line Mushaf page | Jump to any surah, page or juz | Hidden words, live reveal, controls |
+| <img src="docs/screenshots/01-reader.jpg" width="230"/> | <img src="docs/screenshots/02-navigation.jpg" width="230"/> | <img src="docs/screenshots/03-recitation-hidden.jpg" width="230"/> |
+| Standard 15-line Mushaf page, juz/hizb label | Jump to any surah, page or juz | Hidden words, controls |
 
-| Tap a hidden word | Settings |
-|:---:|:---:|
-| <img src="docs/screenshots/04-word-menu.jpg" width="230"/> | <img src="docs/screenshots/05-settings.jpg" width="230"/> |
-| Start from here / reveal this word | Strictness, review marks, diagnostics |
+| Recitation (live reveal) | Session summary | Settings |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/04-recitation-live.jpg" width="230"/> | <img src="docs/screenshots/05-summary.jpg" width="230"/> | <img src="docs/screenshots/06-settings.jpg" width="230"/> |
+| Words appear as you recite | Progress and words for review | Strictness, continuous mode, diagnostics |
 
 ## Features
 **Mushaf reader**
@@ -42,6 +42,7 @@ This repository contains the complete Android project and the GitHub Actions wor
 **Recitation mode**
 - Page words are hidden and replaced by a thin, continuous gray underline that follows the real position and width of the unrevealed words; revealed words appear in place with full diacritics and **nothing moves or reflows**.
 - Live, on-device speech recognition reveals each word as you recite it, with partial skips and uncertain words marked for review.
+- **Auto-pause:** if the microphone hears no speech for **1 minute**, recitation pauses by itself; press the button to resume.
 - **One microphone button** for start, pause and resume: green mic (ready), amber pause icon (recording), blue play icon (paused). Pausing really stops the microphone, and resuming continues from the same word.
 - **تلميح (Hint)** reveals the next word.
 - **إظهار الآية (Show ayah)** reveals the current ayah; each further press reveals the next ayah, moving on to the next page automatically when needed, without stopping the session.
@@ -50,7 +51,7 @@ This repository contains the complete Android project and the GitHub Actions wor
 - Session summary: progress and a list of words **للمراجعة** (for review).
 
 **Other**
-- **Hizb indicator** under the page number: `حزب N` plus a drawn pie for ¼ / ½ / ¾ of the hizb or the start of a hizb, from the complete 240-quarter data in `qpc-hafs.db` (`python3 tools/validate_hizb_quarters.py` checks it).
+- **Juz/Hizb indicator** under the page number: `جزء N · حزب N` plus a drawn pie for ¼ / ½ / ¾ of the hizb or the start of a hizb, taken from the **last ayah on the page**, so when a new quarter starts inside the page the label shows that new quarter (and its juz); data is the complete 240-quarter table in `qpc-hafs.db` (`python3 tools/validate_hizb_quarters.py` checks it).
 - Open-book icon next to the page number shows the side of the Mushaf spread: odd pages are the right page, even pages the left page.
 - Welcome page with the Basmala, white background like a printed Mushaf, Arabic right-to-left interface.
 - Settings: recitation strictness (lenient / normal / strict), show review marks immediately, ASR diagnostics.

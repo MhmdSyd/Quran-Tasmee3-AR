@@ -52,6 +52,13 @@ class HizbDataTest {
         assertEquals(HizbLabel(60, 3, 240), quarters.labelAt(114, 6))   // last ayah
     }
 
+    @Test fun juzOfLabel() {
+        assertEquals(1, quarters.labelAt(1, 1)!!.juz)
+        assertEquals(1, quarters.labelAt(2, 141)!!.juz)
+        assertEquals(2, quarters.labelAt(2, 142)!!.juz)
+        assertEquals(30, quarters.labelAt(114, 6)!!.juz)
+    }
+
     @Test fun juzStartsAreHizbStarts() {
         for ((j, juz) in JuzStarts.FIRST_AYAH.withIndex()) {
             val label = quarters.labelAt(juz.first, juz.second)!!

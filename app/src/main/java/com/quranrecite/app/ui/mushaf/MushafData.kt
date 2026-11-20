@@ -55,6 +55,12 @@ fun QuranPage.firstAyahKey(): Pair<Int, Int>? {
     return null
 }
 
+/** (surah, ayah) of the last word on the page, or null. A quarter that starts inside the page is the one this ayah lies in. */
+fun QuranPage.lastAyahKey(): Pair<Int, Int>? {
+    for (l in lines.asReversed()) if (l is PageLine.Ayahs && l.words.isNotEmpty()) return l.words.last().let { it.surah to it.ayah }
+    return null
+}
+
 /** Surah that the page starts in (first ayah word, else first header). */
 fun QuranPage.firstSurah(): Int? {
     for (l in lines) if (l is PageLine.Ayahs && l.words.isNotEmpty()) return l.words.first().surah

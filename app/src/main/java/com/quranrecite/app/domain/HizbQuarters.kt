@@ -1,7 +1,10 @@
 package com.quranrecite.app.domain
 
 /** Where in its hizb an ayah lies: [hizb] 1..60 and [part] 0 = start of the hizb, 1 = a quarter, 2 = a half, 3 = three quarters. */
-data class HizbLabel(val hizb: Int, val part: Int, val quarter: Int)
+data class HizbLabel(val hizb: Int, val part: Int, val quarter: Int) {
+    /** Juz' 1..30 of this quarter: every juz is 8 quarters and starts on a hizb start (checked in [HizbQuarters.problem]). */
+    val juz: Int get() = (quarter - 1) / 8 + 1
+}
 
 /**
  * The 240 hizb-quarter (rub' al-hizb) starts of the Madani Mushaf as (surah, ayah), in reading order.

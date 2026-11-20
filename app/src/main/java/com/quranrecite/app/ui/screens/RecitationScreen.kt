@@ -1,5 +1,6 @@
 package com.quranrecite.app.ui.screens
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -90,6 +91,9 @@ import kotlinx.coroutines.yield
 
 private val ScreenBg = Color.White
 
+/** No speech for this long while listening -> the session pauses itself. */
+private const val IDLE_PAUSE_MS = 60_000L
+
 // Microphone toggle colours: idle = the existing start green, reciting = amber, paused = slate blue.
 private val MicActive = Color(0xFFB5651D)
 private val MicPaused = Color(0xFF3E5C76)
@@ -139,6 +143,8 @@ fun RecitationScreen(
     LaunchedEffect(curPage) { container.readingPosition.lastPage = curPage }
     // True while progress.finished was caused by "show ayah" (the page's last ayah was shown): that must not end the session.
     var finishedByShow by remember { mutableStateOf(false) }
+    // Idle auto-pause: bumped whenever speech is heard; if the microphone listens for IDLE_PAUSE_MS with no speech, pause it.
+    var heardSeq by remember { mutableStateOf(0) }
 
     // 1) page + basmala -> matcher
     LaunchedEffect(page) {
@@ -153,9 +159,21 @@ fun RecitationScreen(
             when (ev) {
                 is SpeechEvent.Listening -> { error = null; micDenied = false; timer.start() }
                 is SpeechEvent.Error -> error = ev
+                // any recognised speech counts as "heard something" and restarts the idle countdown
+                is SpeechEvent.Partial, is SpeechEvent.Final -> heardSeq++
                 else -> Unit
             }
             matcher.onSpeech(ev)
+        }
+    }
+
+    // 2b) auto-pause after one minute without hearing anything (restarts on Listening and on every Partial/Final)
+    LaunchedEffect(engineState, heardSeq) {
+        if (engineState == EngineState.Listening) {
+            delay(IDLE_PAUSE_MS)
+            timer.pause()
+            engine.pause()
+            Toast.makeText(ctx, "تم إيقاف التسميع مؤقتًا لعدم سماع صوت لمدة دقيقة", Toast.LENGTH_LONG).show()
         }
     }
 
