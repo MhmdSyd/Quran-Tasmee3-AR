@@ -163,16 +163,27 @@ fun RecitationScreen(
         }
     }
 
-    // 2b) auto-pause: if no NEW word is detected for IDLE_PAUSE_MS while listening, pause the microphone.
-    // Noise or unmatched sounds do not count; only real progress on the page (a word passed/revealed, or a page change) restarts the countdown.
-    // Pressing the mic button resumes (the effect restarts on Listening with a fresh countdown).
-    val progressKey = Triple(curPage, progress.passedWords, progress.revealedCount)
-    LaunchedEffect(engineState, progressKey) {
-        if (engineState == EngineState.Listening) {
-            delay(IDLE_PAUSE_MS)
-            timer.pause()
-            Toast.makeText(ctx, "تم إيقاف التسميع مؤقتًا: لم تُكتشف كلمة جديدة لمدة دقيقة. اضغط الزر للمتابعة", Toast.LENGTH_LONG).show()
-            scope.launch { engine.pause() }
+    // 2b) auto-pause: while listening, if the reciter makes no forward progress on the page for IDLE_PAUSE_MS, pause.
+    // Progress = the cursor passed a new word (recited, hinted or shown) or the page changed. Sound that is not the current /
+    // next ayah (talking, noise) never moves the cursor, so it does not restart the countdown.
+    // Resuming with the mic button starts a fresh countdown.
+    var lastProgressAt by remember { mutableStateOf(android.os.SystemClock.elapsedRealtime()) }
+    var lastPassed by remember { mutableStateOf(progress.passedWords) }
+    var lastSeenPage by remember { mutableStateOf(curPage) }
+    if (progress.passedWords > lastPassed || curPage != lastSeenPage) lastProgressAt = android.os.SystemClock.elapsedRealtime()
+    lastPassed = progress.passedWords
+    lastSeenPage = curPage
+    LaunchedEffect(engineState) {
+        if (engineState != EngineState.Listening) return@LaunchedEffect
+        lastProgressAt = android.os.SystemClock.elapsedRealtime()   // fresh countdown on start / resume
+        while (true) {
+            delay(1_000)
+            if (android.os.SystemClock.elapsedRealtime() - lastProgressAt >= IDLE_PAUSE_MS) {
+                timer.pause()
+                Toast.makeText(ctx, "تم إيقاف التسميع مؤقتًا: لم تُكتشف كلمة جديدة من الآية لمدة دقيقة. اضغط الزر للمتابعة", Toast.LENGTH_LONG).show()
+                scope.launch { engine.pause() }   // own scope: this effect is cancelled as soon as the state becomes Paused
+                break
+            }
         }
     }
 
