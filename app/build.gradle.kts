@@ -17,10 +17,8 @@ android {
         applicationId = "com.quranrecite.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 11
-        versionName = "0.4.7"
-        // sherpa-onnx native libs (fetched by tools/fetch_asr_assets.sh into src/main/jniLibs)
-        ndk { abiFilters += listOf("arm64-v8a") }   // 64-bit ARM only (virtually all phones since ~2019); saves ~40-45 MB
+        versionCode = 12
+        versionName = "0.4.8"
     }
 
     // Optional release signing: only when CI (or the developer) provides the keystore through the environment.
@@ -48,6 +46,17 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+    // One build, several APKs: a universal APK (all ABIs, "normal") plus one per ABI. CI publishes the universal APK and
+    // the arm64-v8a one (about 40 MB smaller). The sherpa-onnx native libs come from src/main/jniLibs (tools/fetch_asr_assets.sh).
+    // Do NOT also set ndk.abiFilters: it conflicts with ABI splits.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            isUniversalApk = true
+        }
+    }
     buildFeatures { compose = true }
     // The ASR model is a 36 MB asset and each ABI adds a ~16-27 MB uncompressed .so; keep them mmap-able.
     packaging { jniLibs { useLegacyPackaging = false } }

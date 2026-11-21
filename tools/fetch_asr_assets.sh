@@ -12,7 +12,7 @@ SHERPA_VER="v2.0.1"
 SHERPA_ARCHIVE="sherpa-onnx-${SHERPA_VER}-android-static-link-onnxruntime.tar.bz2"
 SHERPA_URL="https://github.com/k2-fsa/sherpa-onnx/releases/download/${SHERPA_VER}/${SHERPA_ARCHIVE}"
 SHERPA_SHA256="fe1c9ceffd86770218a1d4bba6b410d6f726b2b8dda6a5488499b05250b53aea"
-ABIS=(arm64-v8a)
+ABIS=(arm64-v8a armeabi-v7a x86_64)
 
 HF_COMMIT="0c2744b9d70aaf45ba574c30c5d318c575258e66"
 MODEL_DIR="app/src/main/assets/asr/quran-asr-small"

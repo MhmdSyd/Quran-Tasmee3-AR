@@ -59,7 +59,7 @@ This repository contains the complete Android project and the GitHub Actions wor
 ## Install
 1. Open the **[Releases](../../releases)** page and download the latest `Quran-Tasmee3-*.apk`.
 2. Copy it to your phone and open it (allow *Install unknown apps* for your browser/file manager when asked).
-3. Android 8.0 (API 26) or newer; a 64-bit ARM phone (arm64-v8a) is required; 32-bit and x86 builds are no longer shipped to keep the APK smaller. The APK is still large (~70 MB) because it contains the offline speech model.
+3. Android 8.0 (API 26) or newer; every release has **two APKs**: `-universal.apk` (works on all phones/emulators: arm64-v8a, armeabi-v7a, x86_64; ~110 MB) and `-arm64-v8a.apk` (64-bit ARM phones, which is almost every phone since ~2019; ~40 MB smaller). Both contain the offline speech model.
 4. On the first recitation, grant the **microphone** permission.
 
 ## How to use
@@ -94,7 +94,7 @@ Requires JDK 17 and the Android SDK (platform 34).
 ```
 bash tools/fetch_asr_assets.sh      # once: ASR model (36 MB) + sherpa-onnx native libs; pinned + SHA-256 verified
 ./gradlew testDebugUnitTest         # JVM tests
-./gradlew assembleDebug             # app/build/outputs/apk/debug/Quran-Tasmee3-debug.apk
+./gradlew assembleDebug             # app/build/outputs/apk/debug/Quran-Tasmee3-universal-debug.apk (+ ...-arm64-v8a-debug.apk)
 ```
 The fetch step is build-time only. Without it the app still builds but the speech engine reports `ModelMissing`.
 Python checks (no dependencies beyond the standard library): `python3 tools/validate_quran_data.py`,

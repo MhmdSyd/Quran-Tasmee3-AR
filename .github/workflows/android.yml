@@ -70,7 +70,9 @@ jobs:
 
       - name: APK checks (offline guarantees + required assets)
         run: |
-          APK=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          OUT=app/build/outputs/apk/debug
+          APK=$(ls $OUT/*universal*.apk | head -1)
+          ARM64=$(ls $OUT/*arm64-v8a*.apk | head -1)
           AAPT2=$(ls $ANDROID_HOME/build-tools/*/aapt2 | tail -1)
           echo "--- permissions"; "$AAPT2" dump permissions "$APK"
           if "$AAPT2" dump permissions "$APK" | grep -q "android.permission.INTERNET"; then
@@ -82,16 +84,26 @@ jobs:
             echo "$LIST" | grep -q "$f" || { echo "missing in APK: $f"; exit 1; }
           done
           echo "$LIST" | grep -q "surah_header_bg.png" || { echo "missing surah_header_bg.png"; exit 1; }
-          for abi in arm64-v8a; do
-            echo "$LIST" | grep -q "lib/$abi/libsherpa-onnx-jni.so" || { echo "missing $abi native lib"; exit 1; }
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            echo "$LIST" | grep -q "lib/$abi/libsherpa-onnx-jni.so" || { echo "universal APK: missing $abi native lib"; exit 1; }
           done
-          ls -la "$APK"
+          # the arm64 APK must carry the same assets, only the arm64 native lib, and no INTERNET permission
+          LIST64=$(unzip -l "$ARM64")
+          for f in assets/asr/quran-asr-small/model.int8.onnx assets/qpc-hafs.db assets/quran-index.db; do
+            echo "$LIST64" | grep -q "$f" || { echo "arm64 APK: missing $f"; exit 1; }
+          done
+          echo "$LIST64" | grep -q "lib/arm64-v8a/libsherpa-onnx-jni.so" || { echo "arm64 APK: missing arm64 native lib"; exit 1; }
+          if echo "$LIST64" | grep -qE "lib/(armeabi-v7a|x86_64)/"; then echo "arm64 APK must not contain other ABIs"; exit 1; fi
+          if "$AAPT2" dump permissions "$ARM64" | grep -q "android.permission.INTERNET"; then echo "INTERNET permission in arm64 APK"; exit 1; fi
+          ls -la "$APK" "$ARM64"
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: Quran-Tasmee3-debug
-          path: app/build/outputs/apk/debug/*.apk
+          path: |
+            app/build/outputs/apk/debug/*universal*.apk
+            app/build/outputs/apk/debug/*arm64-v8a*.apk
           if-no-files-found: error
 
       - name: JVM unit tests
@@ -119,7 +131,7 @@ jobs:
       - run: pip install -r tools/asr_smoke_requirements.txt
       - run: python3 tools/asr_smoke_test.py
 
-  # ---- 4. GitHub Release with the APK attached - automatic ----
+  # ---- 4. GitHub Release with the two APKs attached (universal + arm64-v8a) - automatic ----
   # Runs after data-checks + build (+ JVM tests) are green, on a push to main/master or a pushed v* tag (not on PRs).
   # The tag is v<versionName from app/build.gradle.kts> (or the pushed tag). If that release already exists it is
   # left alone, so only the first push of a new version publishes. Bump versionName to publish the next one.
@@ -157,11 +169,13 @@ jobs:
             echo "::notice::Release $TAG already exists - nothing to do."
             exit 0
           fi
-          APK=$(ls dist/*.apk | head -1)
-          cp "$APK" "dist/Quran-Tasmee3-${TAG}.apk"
+          cp "$(ls dist/*universal*.apk | head -1)" "dist/Quran-Tasmee3-${TAG}-universal.apk"
+          cp "$(ls dist/*arm64-v8a*.apk | head -1)" "dist/Quran-Tasmee3-${TAG}-arm64-v8a.apk"
           NOTES="docs/RELEASE_NOTES_${TAG}.md"
           if [ -f "$NOTES" ]; then NOTES_ARGS=(--notes-file "$NOTES"); else NOTES_ARGS=(--generate-notes); fi
-          gh release create "$TAG" "dist/Quran-Tasmee3-${TAG}.apk" \
+          gh release create "$TAG" \
+            "dist/Quran-Tasmee3-${TAG}-universal.apk" \
+            "dist/Quran-Tasmee3-${TAG}-arm64-v8a.apk" \
             --title "تسميع — Quran Tasmee3 ${TAG}" \
             --target "$GITHUB_SHA" \
             "${NOTES_ARGS[@]}" \
@@ -216,5 +230,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Quran-Tasmee3-release
-          path: app/build/outputs/apk/release/*.apk
+          path: |
+            app/build/outputs/apk/release/*universal*.apk
+            app/build/outputs/apk/release/*arm64-v8a*.apk
           if-no-files-found: error
