@@ -20,7 +20,7 @@ android {
         versionCode = 11
         versionName = "0.4.7"
         // sherpa-onnx native libs (fetched by tools/fetch_asr_assets.sh into src/main/jniLibs)
-        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
+        ndk { abiFilters += listOf("arm64-v8a") }   // 64-bit ARM only (virtually all phones since ~2019); saves ~40-45 MB
     }
 
     // Optional release signing: only when CI (or the developer) provides the keystore through the environment.

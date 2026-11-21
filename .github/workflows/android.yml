@@ -82,7 +82,7 @@ jobs:
             echo "$LIST" | grep -q "$f" || { echo "missing in APK: $f"; exit 1; }
           done
           echo "$LIST" | grep -q "surah_header_bg.png" || { echo "missing surah_header_bg.png"; exit 1; }
-          for abi in arm64-v8a armeabi-v7a x86_64; do
+          for abi in arm64-v8a; do
             echo "$LIST" | grep -q "lib/$abi/libsherpa-onnx-jni.so" || { echo "missing $abi native lib"; exit 1; }
           done
           ls -la "$APK"

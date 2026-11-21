@@ -59,7 +59,7 @@ This repository contains the complete Android project and the GitHub Actions wor
 ## Install
 1. Open the **[Releases](../../releases)** page and download the latest `Quran-Tasmee3-*.apk`.
 2. Copy it to your phone and open it (allow *Install unknown apps* for your browser/file manager when asked).
-3. Android 8.0 (API 26) or newer; arm64-v8a, armeabi-v7a and x86_64 are included. The APK is large (~100 MB) because it contains the offline speech model.
+3. Android 8.0 (API 26) or newer; a 64-bit ARM phone (arm64-v8a) is required; 32-bit and x86 builds are no longer shipped to keep the APK smaller. The APK is still large (~70 MB) because it contains the offline speech model.
 4. On the first recitation, grant the **microphone** permission.
 
 ## How to use
